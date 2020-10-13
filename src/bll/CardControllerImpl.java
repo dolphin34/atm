@@ -18,23 +18,23 @@ public class CardControllerImpl implements CardController {
         currentCard = cardDAL.findByCardNumber(cardNumber);
         String message;
         if (currentCard == null) {
-            message = "Card does not exist!";
+            message = "Card does not exist!\n";
             views.insertCard(message);
         } else if (currentCard.isActive()) {
             if (checkLinkedAccount(currentCard.getAccountNumber())) {
                 views.enterPin(currentCard.getName(), 1);
             } else {
-                message = "Do not have a account link with card!";
+                message = "Do not have a account link with card!\n";
                 views.insertCard(message);
             }
         } else {
-            message = "Your card is locked!";
+            message = "Your card is locked!\n";
             views.insertCard(message);
         }
     }
 
     private boolean checkLinkedAccount(String accountNumber) {
-        return accountController.findByAccountNumber(accountNumber);
+        return accountController.isExistAccountNumber(accountNumber);
     }
 
     @Override
@@ -45,10 +45,10 @@ public class CardControllerImpl implements CardController {
             views.home();
         } else if (time == 3) {
             currentCard.setActive(false);
-            message = "Your card has been locked!";
+            message = "Your card has been locked!\n";
             views.insertCard(message);
         } else {
-            message = "Wrong Pin (" + time + ")!";
+            message = "Wrong pin (" + time + ")!" + "\n";
             views.enterPin(currentCard.getName(), time + 1, message);
         }
     }
@@ -62,10 +62,10 @@ public class CardControllerImpl implements CardController {
     public void pinChange(String newPin) {
         String message;
         if (!newPin.equals(currentCard.getPin()) && cardDAL.pinChange(currentCard.getNumber(), newPin)) {
-            message = "Pin Change Success";
+            message = "Pin change success!\n";
             views.enterPin(currentCard.getName(), 1, message);
         } else {
-            message = "New pin can not the same old pin!";
+            message = "New pin can not the same old pin!\n";
             views.pinChange(message);
         }
     }

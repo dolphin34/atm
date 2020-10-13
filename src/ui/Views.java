@@ -14,11 +14,12 @@ public interface Views {
     void displayBalanceInquiry(Account account);
 
     void cashWithdrawal();
-    void displayResultCashWithdrawal(boolean success, String message, int[][] result);
+    void enterOtherAmountCashWithdrawal(String... messages);
+    void displayResultCashWithdrawal(boolean success, int[][] result, Transaction transaction, String... messages);
 
-    void enterAccountTransfer();
-    void enterAmountTransfer(String accountNumberReceive);
-    void displayResultTransfer(boolean success, String message, Account currentAccount, String accountNumberReceive, long amountTransfer);
+    void enterAccountTransfer(String... messages);
+    void enterAmountTransfer(String accountNumberReceive, String accountNameReceive, String... messages);
+    void displayResultTransfer(boolean success, String message, Account currentAccount, Transaction transaction);
 
     void displayStatement(Account account, List<Transaction> listTransaction);
 }

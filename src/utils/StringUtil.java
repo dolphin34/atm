@@ -11,15 +11,14 @@ public class StringUtil {
 
     public static boolean isNumericString(String str) {
         try {
-            Long.parseLong(str);
-            return true;
+            return Long.parseLong(str) > 0;
         } catch (NumberFormatException e) {
             return false;
         }
     }
 
     public static void printMessages(String... messages) {
-        for (String str: messages) {
+        for (String str : messages) {
             System.out.println(str);
         }
     }

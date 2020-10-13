@@ -1,12 +1,12 @@
 package bll;
 
 public interface AccountController {
-    boolean findByAccountNumber(String accountNumber);
+    boolean isExistAccountNumber(String accountNumber);
     void getLinkedAccountWithCard(String accountNumber);
     void removeLinkedAccountWithCard();
     void balanceInquiry();
     void cashWithdrawal(long amount);
-    boolean checkReceiveAccount(String accountNumberReceice);
+    void checkReceiveAccount(String accountNumberReceive);
     void transfer(String accountNumberReceive, long amountTransfer);
     void printStatement();
 }
