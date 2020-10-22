@@ -11,7 +11,7 @@ public class StringUtil {
 
     public static boolean isNumericString(String str) {
         try {
-            return Long.parseLong(str) > 0;
+            return Long.parseLong(str) >= 0;
         } catch (NumberFormatException e) {
             return false;
         }
@@ -21,6 +21,7 @@ public class StringUtil {
         for (String str : messages) {
             System.out.println(str);
         }
+        System.out.println();
     }
 
     public static String amountToString(long amount) {

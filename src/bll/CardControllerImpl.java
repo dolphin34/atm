@@ -18,17 +18,17 @@ public class CardControllerImpl implements CardController {
         currentCard = cardDAL.findByCardNumber(cardNumber);
         String message;
         if (currentCard == null) {
-            message = "Card does not exist!\n";
+            message = "Card does not exist!";
             views.insertCard(message);
         } else if (currentCard.isActive()) {
             if (checkLinkedAccount(currentCard.getAccountNumber())) {
                 views.enterPin(currentCard.getName(), 1);
             } else {
-                message = "Do not have a account link with card!\n";
+                message = "Do not have a account link with card!";
                 views.insertCard(message);
             }
         } else {
-            message = "Your card is locked!\n";
+            message = "Your card is locked!";
             views.insertCard(message);
         }
     }
@@ -43,12 +43,12 @@ public class CardControllerImpl implements CardController {
         if (currentCard.getPin().equals(Pin)) {
             getLinkedAccount(currentCard.getAccountNumber());
             views.home();
-        } else if (time == 3) {
+        } else if (time > 3) {
             currentCard.setActive(false);
-            message = "Your card has been locked!\n";
+            message = "Your card has been locked!";
             views.insertCard(message);
         } else {
-            message = "Wrong pin (" + time + ")!" + "\n";
+            message = "Wrong pin (" + time + ")! (more than 3 time wrong pin consecutive will be lock)" + "";
             views.enterPin(currentCard.getName(), time + 1, message);
         }
     }
@@ -61,11 +61,15 @@ public class CardControllerImpl implements CardController {
     @Override
     public void pinChange(String newPin) {
         String message;
-        if (!newPin.equals(currentCard.getPin()) && cardDAL.pinChange(currentCard.getNumber(), newPin)) {
-            message = "Pin change success!\n";
+        if (!newPin.equals(currentCard.getPin())) {
+            if (cardDAL.pinChange(currentCard.getNumber(), newPin))
+                message = "Pin change success!";
+            else
+                message = "Pin change fails!";
+
             views.enterPin(currentCard.getName(), 1, message);
         } else {
-            message = "New pin can not the same old pin!\n";
+            message = "New pin can not the same old pin!";
             views.pinChange(message);
         }
     }

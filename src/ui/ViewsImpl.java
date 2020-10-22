@@ -1,5 +1,6 @@
 package ui;
 
+import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -22,15 +23,19 @@ public class ViewsImpl implements Views {
     public void insertCard(String... messages) {
         System.out.println("-------------------------");
         StringUtil.printMessages(messages);
+        System.out.println("(Enter 0 to end)");
         System.out.println("Card number (8 digit and start with 0800): ");
-        String cardNumber = scanner.nextLine();
-        cardNumber = StringUtil.formatNumericString(cardNumber);
-        boolean isValid = cardNumber.length() == 8 && cardNumber.startsWith("0800") && StringUtil.isNumericString(cardNumber);
-        if (isValid) {
-            cardController.checkCard(cardNumber);
-        } else {
-            System.out.println("Invalid card number!");
-            insertCard();
+        String cardNumber = enterNumericString();
+        if (cardNumber.equals("0"))
+            System.exit(0);
+        else {
+            boolean isValidCardNumber = cardNumber.length() == 8 && cardNumber.startsWith("0800");
+            if (isValidCardNumber) {
+                cardController.checkCard(cardNumber);
+            } else {
+                System.out.println("Invalid card number!");
+                insertCard();
+            }
         }
     }
 
@@ -38,16 +43,20 @@ public class ViewsImpl implements Views {
     public void enterPin(String userName, int time, String... message) {
         System.out.println("-------------------------");
         StringUtil.printMessages(message);
+        System.out.println("(Enter 0 to go back)");
         System.out.println("Hello, " + userName);
         System.out.println("Pin (6 digits): ");
-        String pin = scanner.nextLine();
-        pin = StringUtil.formatNumericString(pin);
-        boolean isValid = pin.length() == 6 && StringUtil.isNumericString(pin);
-        if (isValid) {
-            cardController.checkPin(pin, time);
-        } else {
-            System.out.println("Invalid pin!");
-            enterPin(userName, time);
+        String pin = enterNumericString();
+        if (pin.equals("0"))
+            insertCard();
+        else {
+            boolean isValidPin = pin.length() == 6;
+            if (isValidPin) {
+                cardController.checkPin(pin, time);
+            } else {
+                System.out.println("Invalid pin!");
+                enterPin(userName, time);
+            }
         }
     }
 
@@ -89,13 +98,12 @@ public class ViewsImpl implements Views {
         StringUtil.printMessages(messages);
         System.out.println("(Enter 0 to back to list options)");
         System.out.println("Enter your new pin (6 digits): ");
-        String newPin = scanner.nextLine();
-        newPin = StringUtil.formatNumericString(newPin);
+        String newPin = enterNumericString();
         if (newPin.equals("0"))
             home();
         else {
-            boolean isValid = newPin.length() == 6 && StringUtil.isNumericString(newPin);
-            if (isValid) {
+            boolean isValidNewPin = newPin.length() == 6;
+            if (isValidNewPin) {
                 cardController.pinChange(newPin);
             } else {
                 System.out.println("Invalid pin!");
@@ -114,6 +122,7 @@ public class ViewsImpl implements Views {
         System.out.println("Account number: " + account.getNumber());
         System.out.println("User: " + account.getName());
         System.out.println("Balance: " + StringUtil.amountToString(account.getAmount()));
+        System.out.println("Time: " + StringUtil.dateToString(new Date()));
         nextAction();
     }
 
@@ -155,8 +164,7 @@ public class ViewsImpl implements Views {
         StringUtil.printMessages(messages);
         System.out.println("(Enter 0 to back to list options)");
         System.out.println("Enter number amount (multiples of 50,000): ");
-        String number = scanner.nextLine();
-        number = StringUtil.formatNumericString(number);
+        String number = enterNumericString();
         if (number.equals("0"))
             home();
         else {
@@ -170,7 +178,7 @@ public class ViewsImpl implements Views {
     }
 
     private boolean isValidOtherAmountCashWithdrawal(String number) {
-        return StringUtil.isNumericString(number) && Long.parseLong(number) % 50000 == 0;
+        return !number.equals("") && Long.parseLong(number) > 0 && Long.parseLong(number) % 50000 == 0;
     }
 
     @Override
@@ -195,17 +203,16 @@ public class ViewsImpl implements Views {
         StringUtil.printMessages(messages);
         System.out.println("(Enter 0 to back to list options)");
         System.out.println("Account number receive (5 digits):");
-        String accountNumber = scanner.nextLine();
-        accountNumber = StringUtil.formatNumericString(accountNumber);
+        String accountNumber = enterNumericString();
         if (accountNumber.equals("0"))
             home();
         else {
-            boolean isValid = accountNumber.length() == 5 && StringUtil.isNumericString(accountNumber);
+            boolean isValid = accountNumber.length() == 5;
             if (isValid) {
                 accountController.checkReceiveAccount(accountNumber);
             } else {
-                System.out.println("Invalid account number!");
-                enterAccountTransfer();
+                String message = "Invalid account number!";
+                enterAccountTransfer(message);
             }
         }
     }
@@ -213,23 +220,22 @@ public class ViewsImpl implements Views {
     @Override
     public void enterAmountTransfer(String accountNumberReceive, String accountNameReceive, String... messages) {
         System.out.println("-------------------------");
+        StringUtil.printMessages(messages);
         System.out.println("Account receive : ");
         System.out.println("Name: " + accountNameReceive);
         System.out.println("Account number: " + accountNumberReceive + "\n");
-        StringUtil.printMessages(messages);
         System.out.println("(Enter 0 to back to list options)");
         System.out.println("Enter number amount transfer: ");
-        String amountTransfer = scanner.nextLine();
-        amountTransfer = StringUtil.formatNumericString(amountTransfer);
+        String amountTransfer = enterNumericString();
         if (amountTransfer.equals("0"))
             home();
         else {
-            boolean isValid = StringUtil.isNumericString(amountTransfer);
+            boolean isValid = !amountTransfer.equals("") &&  Long.parseLong(amountTransfer) > 0;
             if (isValid) {
                 accountController.transfer(accountNumberReceive, Long.parseLong(amountTransfer));
             } else {
-                System.out.println("Invalid amount number!");
-                enterAmountTransfer(accountNumberReceive, accountNameReceive);
+                String message = "Invalid amount number!";
+                enterAmountTransfer(accountNumberReceive, accountNameReceive, message);
             }
         }
     }
@@ -272,6 +278,14 @@ public class ViewsImpl implements Views {
 
     private void logout() {
         cardController.logout();
+    }
+
+    private String enterNumericString() {
+        String numericString = StringUtil.formatNumericString(scanner.nextLine());
+        if (!StringUtil.isNumericString(numericString)) {
+            return "";
+        }
+        return numericString;
     }
 
     private void nextAction() {

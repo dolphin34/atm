@@ -52,19 +52,19 @@ public class AccountControllerImpl implements AccountController {
                 boolean withdrawalSuccess = transactionController.insertTransaction(newTransaction) && accountDAL.updateInfoAccount(currentAccount.getNumber(), currentAccount.getAmount() - (amountWithdrawal + Constants.CASH_WITHDRAWAL_FEE), newTransaction.getId());
                 if (withdrawalSuccess) {
                     currentAccount = accountDAL.findByAccountNumber(currentAccount.getNumber());
-                    message = "Successfully!\n";
+                    message = "Successfully!";
                     views.displayResultCashWithdrawal(true, cashOut, newTransaction, message);
                 } else {
-                    message = "An error occurred!\n";
+                    message = "An error occurred!";
                     views.displayResultCashWithdrawal(false, null, null, message);
                 }
             } else {
-                message = "Not enough money in ATM!\n";
+                message = "Not enough money in ATM!";
                 views.enterOtherAmountCashWithdrawal(message);
             }
         } else {
             message = "Unavailable balance!";
-            String balance = "Balance: " + StringUtil.amountToString(currentAccount.getAmount()) + "\n";
+            String balance = "Balance: " + StringUtil.amountToString(currentAccount.getAmount());
             views.enterOtherAmountCashWithdrawal(message, balance);
         }
 
@@ -113,11 +113,11 @@ public class AccountControllerImpl implements AccountController {
             if (accountReceive != null) {
                 views.enterAmountTransfer(accountReceive.getNumber(), accountReceive.getName());
             } else {
-                message = "Account number does not exist!\n";
+                message = "Account number does not exist!";
                 views.enterAccountTransfer(message);
             }
         } else {
-            message = "Receive account number must be different transfer account number!\n";
+            message = "Receive account number must be different transfer account number!";
             views.enterAccountTransfer(message);
         }
     }
@@ -135,15 +135,15 @@ public class AccountControllerImpl implements AccountController {
                     && accountDAL.updateInfoAccount(accountReceive.getNumber(), accountReceive.getAmount() + amountTransfer, newTransaction.getId());
             if (transferSuccess) {
                 currentAccount = accountDAL.findByAccountNumber(currentAccount.getNumber());
-                message = "Transfer successfully!\n";
+                message = "Transfer successfully!";
                 views.displayResultTransfer(true, message, currentAccount, newTransaction);
             } else {
-                message = "An error occurred!\n";
+                message = "An error occurred!";
                 views.displayResultTransfer(false, message, currentAccount, newTransaction);
             }
         } else {
-            message = "Fails! - Unavailable balance\n";
-            String balance = "Balance: " + StringUtil.amountToString(currentAccount.getAmount()) + "\n";
+            message = "Unavailable balance!";
+            String balance = "Balance: " + StringUtil.amountToString(currentAccount.getAmount());
             views.enterAmountTransfer(accountReceive.getNumber(), accountReceive.getName(), message, balance);
         }
     }
