@@ -1,9 +1,9 @@
-import ui.ViewsImpl;
-import ui.Views;
+import com.vndirect.atm.userinterface.consoleviewImpl.ConsoleViewImpl;
+import com.vndirect.atm.userinterface.View;
 
 public class ATM {
     public static void main(String[] args) {
-        Views view = new ViewsImpl();
+        View view = new ConsoleViewImpl();
         view.insertCard();
     }
 }
