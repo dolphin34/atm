@@ -83,5 +83,30 @@ public class Data {
             }
             return sum;
         }
+
+        public static int[][] getCashInATM() {
+            int[][] temp = new int[3][4];
+            temp[0][0] = Data.CashInAtm.CASH_IN_ATM_500.getValue();
+            temp[0][1] = Data.CashInAtm.CASH_IN_ATM_200.getValue();
+            temp[0][2] = Data.CashInAtm.CASH_IN_ATM_100.getValue();
+            temp[0][3] = Data.CashInAtm.CASH_IN_ATM_50.getValue();
+
+            temp[1][0] = Data.CashInAtm.CASH_IN_ATM_500.getQuantity();
+            temp[1][1] = Data.CashInAtm.CASH_IN_ATM_200.getQuantity();
+            temp[1][2] = Data.CashInAtm.CASH_IN_ATM_100.getQuantity();
+            temp[1][3] = Data.CashInAtm.CASH_IN_ATM_50.getQuantity();
+            return temp;
+        }
+
+        public static void updateQuantity(int[][] quantity) {
+            for (int i = 0; i < 4; i++) {
+                for (CashInAtm x: CashInAtm.values()) {
+                    if (x.getValue() == quantity[0][i]) {
+                        x.setQuantity(quantity[1][i]);
+                    }
+                }
+            }
+        }
+        
     }
 }

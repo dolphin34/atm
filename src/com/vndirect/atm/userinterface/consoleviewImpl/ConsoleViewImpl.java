@@ -1,29 +1,23 @@
 package com.vndirect.atm.userinterface.consoleviewImpl;
 
+import com.vndirect.atm.controller.repo.entity.Transaction;
+import com.vndirect.atm.controller.service.model.AccountModel;
+import com.vndirect.atm.controller.service.model.CardModel;
+import com.vndirect.atm.controller.service.model.TransactionModel;
+import com.vndirect.atm.exception.*;
+import com.vndirect.atm.userinterface.View;
+import com.vndirect.atm.util.Constants;
+import com.vndirect.atm.util.StringUtil;
+
 import java.util.Date;
 import java.util.InputMismatchException;
-import java.util.List;
 import java.util.Scanner;
-
-import com.vndirect.atm.controller.service.AccountService;
-import com.vndirect.atm.controller.service.model.CardModel;
-import com.vndirect.atm.controller.service.serviceimpl.AccountServiceImpl;
-import com.vndirect.atm.controller.service.CardService;
-import com.vndirect.atm.controller.service.serviceimpl.CardServiceImpl;
-import com.vndirect.atm.controller.repo.entity.Account;
-import com.vndirect.atm.controller.repo.entity.Transaction;
-import com.vndirect.atm.exception.InvalidInputException;
-import com.vndirect.atm.exception.LockCardException;
-import com.vndirect.atm.exception.NullCardException;
-import com.vndirect.atm.exception.PinWrongException;
-import com.vndirect.atm.userinterface.View;
-import com.vndirect.atm.util.StringUtil;
 
 public class ConsoleViewImpl implements View {
 
     private static final Scanner scanner = new Scanner(System.in);
-    private static final CardService CARD_SERVICE = new CardServiceImpl();
-    private static final AccountService ACCOUNT_SERVICE = new AccountServiceImpl();
+    public static CardModel currentCard;
+    public static AccountModel currentAccount;
 
     private String input(String notifyString) {
         System.out.println("-------------------------");
@@ -39,12 +33,12 @@ public class ConsoleViewImpl implements View {
         }
     }
 
-    private String enterNumericString() {
-        String numericString = StringUtil.formatNumericString(scanner.nextLine());
-//        if (!StringUtil.isNumericString(numericString)) {
-//            return "";
-//        }
-        return numericString;
+    private void getCurrentAccount(){
+        try {
+            currentAccount = ACCOUNT_VALIDATOR.getAccountByNumber(currentCard.getAccountNumber());
+        } catch (NullException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
@@ -52,8 +46,9 @@ public class ConsoleViewImpl implements View {
         String notify = "Card number (8 digit and start with 0800): ";
         String cardNumber = input(notify);
         try {
-            CARD_VALIDATOR.checkCardNumber(cardNumber);
-        } catch (InvalidInputException | NullCardException | LockCardException e) {
+            currentCard = CARD_VALIDATOR.checkCardNumber(cardNumber);
+            enterPin(1);
+        } catch (InvalidInputException | NullException | LockCardException e) {
             System.out.println(e.getMessage());
 
             showOptions("Try again", "Out");
@@ -70,28 +65,28 @@ public class ConsoleViewImpl implements View {
     }
 
     @Override
-    public void enterPin(CardModel cardModel, int time) {
-        String notify = "Hello, " + cardModel.getName() + "\nPin (6 digits): ";
+    public void enterPin(int time) {
+        String notify = "Hello, " + currentCard.getName() + "\nPin (6 digits): ";
         String pin = input(notify);
 
         try {
-            CARD_VALIDATOR.checkPin(pin, time);
+            CARD_VALIDATOR.checkPin(currentCard.getNumber(), pin, time);
+            getCurrentAccount();
+            showMenu();
         } catch (InvalidInputException e) {
             System.out.println(e.getMessage());
-
-
-        } catch (LockCardException e) {
-            System.out.println(e.getMessage());
-            insertCard();
         } catch (PinWrongException e) {
             System.out.println(e.getMessage());
             time++;
+        } catch (LockCardException e) {
+            System.out.println(e.getMessage());
+            insertCard();
         }
         showOptions("Try again", "Go back");
         int choice = enterChoiceOfAction(2);
         switch (choice) {
             case 1:
-                enterPin(cardModel, time);
+                enterPin(time);
                 break;
             case 2:
                 insertCard();
@@ -100,30 +95,25 @@ public class ConsoleViewImpl implements View {
     }
 
     @Override
-    public void home() {
+    public void showMenu() {
         System.out.println("-------------------------");
-        System.out.println("1.PIN change");
-        System.out.println("2.Balance inquiry");
-        System.out.println("3.Cash withdrawal");
-        System.out.println("4.Transfer");
-        System.out.println("5.Print statement");
-        System.out.println("6.Logout");
+        showOptions("PIN change", "Balance inquiry", "Cash withdrawal", "Transfer", "Print statement", "Logout");
         int choice = enterChoiceOfAction(6);
         switch (choice) {
             case 1:
                 pinChange();
                 break;
             case 2:
-                balanceInquiry();
+                displayBalanceInquiry();
                 break;
             case 3:
-                cashWithdrawal();
+                showOptionsCashWithdrawal();
                 break;
             case 4:
                 enterAccountTransfer();
                 break;
             case 5:
-                printStatement();
+                displayStatement();
                 break;
             case 6:
                 logout();
@@ -132,64 +122,70 @@ public class ConsoleViewImpl implements View {
     }
 
     @Override
-    public void pinChange(String... messages) {
-        System.out.println("-------------------------");
-        StringUtil.printMessages(messages);
-        System.out.println("(Enter 0 to back to list options)");
-        System.out.println("Enter your new pin (6 digits): ");
-        String newPin = enterNumericString();
-        if (newPin.equals("0"))
-            home();
-        else {
-            boolean isValidNewPin = newPin.length() == 6;
-            if (isValidNewPin) {
-                CARD_SERVICE.pinChange(newPin);
-            } else {
-                System.out.println("Invalid pin!");
-                pinChange();
+    public void pinChange() {
+        String notify = "Enter your new pin (6 digits): ";
+        String newPin = input(notify);
+
+        try {
+            CARD_VALIDATOR.pinChange(currentCard.getNumber(), newPin);
+            System.out.println("Pin change success! Login again!");
+            insertCard();
+        } catch (InvalidInputException | FailActionException e) {
+            System.out.println(e.getMessage());
+
+            showOptions("Try again", "Go back");
+            int choice = enterChoiceOfAction(2);
+            switch (choice) {
+                case 1:
+                    pinChange();
+                    break;
+                case 2:
+                    showMenu();
+                    break;
             }
         }
     }
 
-    public void balanceInquiry() {
-        ACCOUNT_SERVICE.balanceInquiry();
-    }
-
     @Override
-    public void displayBalanceInquiry(Account account) {
+    public void displayBalanceInquiry() {
         System.out.println("-------------------------");
-        System.out.println("Account number: " + account.getNumber());
-        System.out.println("User: " + account.getName());
-        System.out.println("Balance: " + StringUtil.amountToString(account.getAmount()));
+        System.out.println("Account number: " + currentAccount.getNumber());
+        System.out.println("User: " + currentAccount.getName());
+        System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
         System.out.println("Time: " + StringUtil.dateToString(new Date()));
-        nextAction();
+
+        showOptions("Menu", "Logout");
+        int choice = enterChoiceOfAction(2);
+        switch (choice) {
+            case 1:
+                showMenu();
+                break;
+            case 2:
+                logout();
+                break;
+        }
     }
 
     @Override
-    public void cashWithdrawal() {
+    public void showOptionsCashWithdrawal() {
         System.out.println("-------------------------");
-        System.out.println("1. 200 000");
-        System.out.println("2. 500 000");
-        System.out.println("3. 1 000 000");
-        System.out.println("4. 1 500 000");
-        System.out.println("5. 2 000 000");
-        System.out.println("6. Other ");
+        showOptions("200 000", "500 000", "1 000 000", "1 500 000", "2 000 000", "Other number");
         int choice = enterChoiceOfAction(6);
         switch (choice) {
             case 1:
-                ACCOUNT_SERVICE.cashWithdrawal(200_000);
+                cashWithdrawal("200 000");
                 break;
             case 2:
-                ACCOUNT_SERVICE.cashWithdrawal(500_00);
+                cashWithdrawal("500 000");
                 break;
             case 3:
-                ACCOUNT_SERVICE.cashWithdrawal(1_000_000);
+                cashWithdrawal("1 000 000");
                 break;
             case 4:
-                ACCOUNT_SERVICE.cashWithdrawal(1_500_000);
+                cashWithdrawal("1 500 000");
                 break;
             case 5:
-                ACCOUNT_SERVICE.cashWithdrawal(2_000_000);
+                cashWithdrawal("2 000 000");
                 break;
             case 6:
                 enterOtherAmountCashWithdrawal();
@@ -197,143 +193,149 @@ public class ConsoleViewImpl implements View {
         }
     }
 
-    @Override
-    public void enterOtherAmountCashWithdrawal(String... messages) {
-        System.out.println("-------------------------");
-        StringUtil.printMessages(messages);
-        System.out.println("(Enter 0 to back to list options)");
-        System.out.println("Enter number amount (multiples of 50,000): ");
-        String number = enterNumericString();
-        if (number.equals("0"))
-            home();
-        else {
-            if (isValidOtherAmountCashWithdrawal(number)) {
-                ACCOUNT_SERVICE.cashWithdrawal(Long.parseLong(number));
-            } else {
-                System.out.println("Invalid amount number!");
-                enterOtherAmountCashWithdrawal();
-            }
-        }
-    }
-
-    private boolean isValidOtherAmountCashWithdrawal(String number) {
-        return !number.equals("") && Long.parseLong(number) > 0 && Long.parseLong(number) % 50000 == 0;
+    public void enterOtherAmountCashWithdrawal() {
+        String notify = "Enter number amount (multiples of 50,000): ";
+        String amount = input(notify);
+        cashWithdrawal(amount);
     }
 
     @Override
-    public void displayResultCashWithdrawal(boolean success, int[][] result, Transaction transaction, String... messages) {
-        System.out.println("-------------------------");
-        StringUtil.printMessages(messages);
-        if (success) {
-            System.out.println("Cash withdrawal fee : " + StringUtil.amountToString(transaction.getFee()));
-            System.out.println("Cash out: " + StringUtil.amountToString(transaction.getAmount()));
-            for (int i = 3; i >= 0; i--) {
+    public void cashWithdrawal(String amount) {
+        try {
+            int[][] result = ACCOUNT_VALIDATOR.cashWithdrawal(currentAccount.getNumber(), amount);
+            getCurrentAccount();
+
+            System.out.println("Cash withdrawal fee: " + Constants.CASH_WITHDRAWAL_FEE);
+            System.out.println("Cash out: ");
+            for (int i = 0; i < 4; i++) {
                 if (result[2][i] != 0) {
                     System.out.println(result[2][i] + " - " + StringUtil.amountToString(result[0][i]));
                 }
             }
-        }
-        nextAction();
-    }
 
-    @Override
-    public void enterAccountTransfer(String... messages) {
-        System.out.println("-------------------------");
-        StringUtil.printMessages(messages);
-        System.out.println("(Enter 0 to back to list options)");
-        System.out.println("Account number receive (5 digits):");
-        String accountNumber = enterNumericString();
-        if (accountNumber.equals("0"))
-            home();
-        else {
-            boolean isValid = accountNumber.length() == 5;
-            if (isValid) {
-                ACCOUNT_SERVICE.checkReceiveAccount(accountNumber);
-            } else {
-                String message = "Invalid account number!";
-                enterAccountTransfer(message);
+            showOptions("Menu", "Logout");
+            int choice = enterChoiceOfAction(2);
+            switch (choice) {
+                case 1:
+                    showMenu();
+                    break;
+                case 2:
+                    logout();
+                    break;
+            }
+        } catch (InvalidInputException | NotEnoughCashException | FailActionException e) {
+            System.out.println(e.getMessage());
+
+            showOptions("Try again", "Menu");
+            int choice = enterChoiceOfAction(2);
+            switch (choice) {
+                case 1:
+                    enterOtherAmountCashWithdrawal();
+                    break;
+                case 2:
+                    showMenu();
+                    break;
             }
         }
     }
 
     @Override
-    public void enterAmountTransfer(String accountNumberReceive, String accountNameReceive, String... messages) {
-        System.out.println("-------------------------");
-        StringUtil.printMessages(messages);
+    public void enterAccountTransfer() {
+        String notify = "Account number receive (5 digits): ";
+        String accountNumber = input(notify);
+        try {
+            AccountModel receiveAccount = ACCOUNT_VALIDATOR.checkReceiveAccountNumber(currentAccount.getNumber(), accountNumber);
+            enterAmountTransfer(receiveAccount);
+        } catch (InvalidInputException | NullException e) {
+            System.out.println(e.getMessage());
+
+            showOptions("Try again", "Menu");
+            int choice = enterChoiceOfAction(2);
+            switch (choice) {
+                case 1:
+                    enterAccountTransfer();
+                    break;
+                case 2:
+                    showMenu();
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public void enterAmountTransfer(AccountModel receiveAccount) {
         System.out.println("Account receive : ");
-        System.out.println("Name: " + accountNameReceive);
-        System.out.println("Account number: " + accountNumberReceive + "\n");
-        System.out.println("(Enter 0 to back to list options)");
-        System.out.println("Enter number amount transfer: ");
-        String amountTransfer = enterNumericString();
-        if (amountTransfer.equals("0"))
-            home();
-        else {
-            boolean isValid = !amountTransfer.equals("") &&  Long.parseLong(amountTransfer) > 0;
-            if (isValid) {
-                ACCOUNT_SERVICE.transfer(accountNumberReceive, Long.parseLong(amountTransfer));
-            } else {
-                String message = "Invalid amount number!";
-                enterAmountTransfer(accountNumberReceive, accountNameReceive, message);
-            }
-        }
+        System.out.println("Name: " + receiveAccount.getName());
+        System.out.println("Account number: " + receiveAccount.getNumber());
+        String notify = "Amount transfer: ";
+        String amountTransfer = input(notify);
+
+        transfer(receiveAccount, amountTransfer);
     }
 
     @Override
-    public void displayResultTransfer(boolean success, String message, Account currentAccount, Transaction transaction) {
-        System.out.println("-------------------------");
-        System.out.println(message);
-        if (success) {
+    public void transfer(AccountModel receiveAccountNumber, String amountTransfer) {
+        try {
+            TransactionModel transactionModel = ACCOUNT_VALIDATOR.transfer(currentAccount.getNumber(), receiveAccountNumber.getNumber(), amountTransfer);
+            getCurrentAccount();
+
             System.out.println("Account number: " + currentAccount.getNumber());
-            System.out.println("User: " + currentAccount.getName());
-            System.out.println("Account number received: " + transaction.getAccountNumberTarget());
-            System.out.println("Amount transfer: " + "-" + StringUtil.amountToString(transaction.getAmount()));
-            System.out.println("Transfer fee: " + "-" + StringUtil.amountToString(transaction.getFee()));
-            System.out.println("Transfer time: " + StringUtil.dateToString(transaction.getDate()));
+            System.out.println("User name: " + currentAccount.getName());
+            System.out.println("Account number received: " + receiveAccountNumber.getNumber());
+            System.out.println("User name: " + receiveAccountNumber.getName());
+            System.out.println("Amount transfer: " + "-" + StringUtil.amountToString(transactionModel.getAmount()));
+            System.out.println("Transfer fee: " + "-" + StringUtil.amountToString(transactionModel.getFee()));
+            System.out.println("Transfer time: " + StringUtil.dateToString(transactionModel.getDate()));
             System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
+        } catch (NotEnoughCashException | FailActionException | InvalidInputException e) {
+            System.out.println(e.getMessage());
         }
-        nextAction();
-    }
 
-    public void printStatement() {
-        ACCOUNT_SERVICE.printStatement();
-    }
-
-    @Override
-    public void displayStatement(Account account, List<Transaction> listTransaction) {
-        System.out.println("-------------------------");
-        System.out.println("List transactions :");
-        for (Transaction transaction : listTransaction) {
-            if (transaction.getTransType() == Transaction.TransactionType.TRANSFER)
-                if (account.getNumber().equals(transaction.getAccountNumberPerform()))
-                    System.out.println(transaction.toStringTransferOut());
-                else
-                    System.out.println(transaction.toStringTransferIn());
-            else
-                System.out.println(transaction.toStringCashWithdrawal());
-        }
-        nextAction();
-    }
-
-    private void logout() {
-        CARD_SERVICE.logout();
-    }
-
-
-
-    private void nextAction() {
-        System.out.println("-----");
-        System.out.println("1.Back");
-        System.out.println("2.Logout");
+        showOptions("Menu", "Logout");
         int choice = enterChoiceOfAction(2);
         switch (choice) {
             case 1:
-                home();
+                showMenu();
                 break;
             case 2:
                 logout();
                 break;
         }
+    }
+
+    @Override
+    public void displayStatement() {
+        System.out.println("-------------------------");
+        System.out.println("List transactions :");
+        for (Transaction transaction : currentAccount.getListTransaction()) {
+            if (transaction.getTransType() == Transaction.TransactionType.TRANSFER) {
+                if (currentAccount.getNumber().equals(transaction.getAccountNumberPerform())) {
+                    System.out.println(transaction.toStringTransferOut());
+                } else {
+                    System.out.println(transaction.toStringTransferIn());
+                }
+            } else {
+                System.out.println(transaction.toStringCashWithdrawal());
+            }
+        }
+
+        showOptions("Menu", "Logout");
+        int choice = enterChoiceOfAction(2);
+        switch (choice) {
+            case 1:
+                showMenu();
+                break;
+            case 2:
+                logout();
+                break;
+        }
+    }
+
+    @Override
+    public void logout() {
+        currentCard = null;
+        currentAccount = null;
+        insertCard();
     }
 
     private int enterChoiceOfAction(int quantityChoices) {

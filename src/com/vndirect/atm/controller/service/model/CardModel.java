@@ -4,10 +4,12 @@ public class CardModel {
 
     private final String number;
     private final String name;
+    private final String accountNumber;
 
-    public CardModel(String number, String name) {
+    public CardModel(String number, String name, String accountNumber) {
         this.number = number;
         this.name = name;
+        this.accountNumber = accountNumber;
     }
 
     public String getNumber() {
@@ -16,5 +18,9 @@ public class CardModel {
 
     public String getName() {
         return name;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
     }
 }

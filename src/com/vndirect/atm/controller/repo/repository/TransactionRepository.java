@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface TransactionRepository {
     boolean insertTransaction(Transaction transaction);
-    List<Transaction> getListTransOfAccount(List<Integer> listTransId);
+    List<Transaction> getListTransactionByListId(List<Integer> listTransId);
 }

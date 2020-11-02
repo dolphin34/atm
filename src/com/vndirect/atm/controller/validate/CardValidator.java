@@ -1,16 +1,15 @@
 package com.vndirect.atm.controller.validate;
 
-import com.vndirect.atm.exception.InvalidInputException;
-import com.vndirect.atm.exception.LockCardException;
-import com.vndirect.atm.exception.NullCardException;
-import com.vndirect.atm.exception.PinWrongException;
-import com.vndirect.atm.userinterface.View;
-import com.vndirect.atm.userinterface.consoleviewImpl.ConsoleViewImpl;
+import com.vndirect.atm.controller.service.CardService;
+import com.vndirect.atm.controller.service.model.CardModel;
+import com.vndirect.atm.controller.service.serviceimpl.CardServiceImpl;
+import com.vndirect.atm.exception.*;
 
 public interface CardValidator {
 
-    View VIEW = new ConsoleViewImpl();
+    CardService CARD_SERVICE = new CardServiceImpl();
 
-    void checkCardNumber(String cardNumber) throws InvalidInputException, LockCardException, NullCardException;
-    void checkPin(String pin, int time) throws InvalidInputException, PinWrongException, LockCardException;
+    CardModel checkCardNumber(String cardNumber) throws InvalidInputException, LockCardException, NullException;
+    void checkPin(String cardNumber, String pin, int time) throws InvalidInputException, PinWrongException, LockCardException;
+    void pinChange(String cardNumber, String newPin) throws InvalidInputException, FailActionException;
 }

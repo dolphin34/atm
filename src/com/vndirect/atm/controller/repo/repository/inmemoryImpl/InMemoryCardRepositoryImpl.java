@@ -5,6 +5,7 @@ import com.vndirect.atm.controller.repo.repository.CardRepository;
 import com.vndirect.atm.controller.repo.entity.Card;
 
 public class InMemoryCardRepositoryImpl implements CardRepository {
+
     @Override
     public Card findCardByNumber(String cardNumber) {
         Card card = null;

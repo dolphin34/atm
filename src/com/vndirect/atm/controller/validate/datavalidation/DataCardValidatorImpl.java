@@ -4,36 +4,33 @@ import com.vndirect.atm.controller.service.CardService;
 import com.vndirect.atm.controller.service.model.CardModel;
 import com.vndirect.atm.controller.service.serviceimpl.CardServiceImpl;
 import com.vndirect.atm.controller.validate.CardValidator;
-import com.vndirect.atm.exception.InvalidInputException;
-import com.vndirect.atm.exception.LockCardException;
-import com.vndirect.atm.exception.NullCardException;
-import com.vndirect.atm.exception.PinWrongException;
-import javafx.fxml.LoadException;
+import com.vndirect.atm.exception.*;
 
 public class DataCardValidatorImpl implements CardValidator {
 
-    private static final CardService CARD_SERVICE = new CardServiceImpl();
+    @Override
+    public CardModel checkCardNumber(String cardNumber) throws NullException, LockCardException {
+        return CARD_SERVICE.findCardByNumber(cardNumber);
+    }
 
     @Override
-    public void checkCardNumber(String cardNumber) throws NullCardException, LockCardException {
-        CardModel card = CARD_SERVICE.findCardByNumber(cardNumber);
-        if (card != null) {
-            VIEW.enterPin(card, 1);
-        } else {
-            throw new NullCardException();
+    public void checkPin(String cardNumber, String pin, int time) throws PinWrongException, LockCardException {
+        if (time > 3) {
+            CARD_SERVICE.lockCard(cardNumber);
+            throw new LockCardException();
+        }
+        if (!CARD_SERVICE.checkPin(cardNumber, pin)) {
+            throw new PinWrongException(time);
         }
     }
 
     @Override
-    public void checkPin(String pin, int time) throws PinWrongException, LockCardException {
-        if (CARD_SERVICE.checkPin(pin)) {
-            VIEW.home();
-        } else {
-            if (time > 3) {
-                CARD_SERVICE.lockCard(CardServiceImpl.currentCard.getNumber());
-                throw  new LockCardException();
-            }
-            throw new PinWrongException(time);
+    public void pinChange(String cardNumber, String newPin) throws InvalidInputException, FailActionException {
+        if (CARD_SERVICE.checkPin(cardNumber, newPin)) {
+            throw new InvalidInputException("New pin can not the same old pin!");
+        }
+        if (!CARD_SERVICE.pinChange(cardNumber, newPin)) {
+            throw new FailActionException("Pin change fail!");
         }
     }
 }

@@ -8,13 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InMemoryTransactionRepositoryImpl implements TransactionRepository {
+
     @Override
     public boolean insertTransaction(Transaction transaction) {
         return Data.listTransaction.add(transaction);
     }
 
     @Override
-    public List<Transaction> getListTransOfAccount(List<Integer> listTransId) {
+    public List<Transaction> getListTransactionByListId(List<Integer> listTransId) {
         List<Transaction> result = new ArrayList<>();
         for (Integer transId : listTransId) {
             for (Transaction trans : Data.listTransaction) {
