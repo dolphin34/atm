@@ -1,7 +1,5 @@
 package com.vndirect.atm.controller.repo.entity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Account {
@@ -9,14 +7,13 @@ public class Account {
     private final String number;
     private final String name;
     private long amount;
-    private final List<Integer> listTransactionId;
+    private List<Integer> listTransactionId;
 
-    public Account(String number, String name, long amount, Integer... listTransactionId) {
+    public Account(String number, String name, long amount, List<Integer> listTransactionId) {
         this.number = number;
         this.name = name;
         this.amount = amount;
-        this.listTransactionId = new ArrayList<>();
-        this.listTransactionId.addAll(Arrays.asList(listTransactionId));
+        this.listTransactionId = listTransactionId;
     }
 
     public String getNumber() {
@@ -35,11 +32,17 @@ public class Account {
         this.amount = amount;
     }
 
-    public void addTransaction(int transactionId) {
-        listTransactionId.add(transactionId);
-    }
-
     public List<Integer> getListTransactionsId() {
         return listTransactionId;
     }
+
+    public void setListTransactionId(List<Integer> listTransactionId) {
+        this.listTransactionId = listTransactionId;
+    }
+
+    public List<Integer> addTransactionsId(Integer newTransactionId) {
+        listTransactionId.add(newTransactionId);
+        return listTransactionId;
+    }
+
 }

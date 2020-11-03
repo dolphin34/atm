@@ -2,6 +2,8 @@ package com.vndirect.atm.util;
 
 import com.vndirect.atm.exception.InvalidInputException;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class StringUtil {
@@ -21,18 +23,12 @@ public class StringUtil {
         }
     }
 
-    public static void printMessages(String... messages) {
-        for (String str : messages) {
-            System.out.println(str);
-        }
-        System.out.println();
-    }
-
     public static String amountToString(long amount) {
         return String.format("%,d", amount) + " VND   ";
     }
 
     public static String dateToString(Date date) {
-        return String.format("%tT", date) + "," + String.format("%tD", date);
+        DateFormat dateFormat = new SimpleDateFormat("E hh:mm:ss a, dd-MMM-yyyy");
+        return dateFormat.format(date);
     }
 }

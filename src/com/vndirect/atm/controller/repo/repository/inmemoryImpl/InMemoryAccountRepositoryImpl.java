@@ -19,12 +19,12 @@ public class InMemoryAccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public boolean updateInfoAccount(String accountNumber, long newAmount, int newTransactionId) {
+    public boolean updateInfoAccount(Account updateAccount) {
         boolean success = false;
         for (Account a : Data.listAccount) {
-            if (a.getNumber().equals(accountNumber)) {
-                a.setAmount(newAmount);
-                a.addTransaction(newTransactionId);
+            if (a.getNumber().equals(updateAccount.getNumber())) {
+                a.setAmount(updateAccount.getAmount());
+                a.setListTransactionId(updateAccount.getListTransactionsId());
                 success = true;
                 break;
             }

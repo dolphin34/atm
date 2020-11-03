@@ -5,6 +5,7 @@ import com.vndirect.atm.controller.repo.entity.Card;
 import com.vndirect.atm.controller.repo.entity.Transaction;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -27,11 +28,11 @@ public class Data {
         listCard.add(c5);
 
         // initialized list account
-        Account a1 = new Account("11111", "VU THI HOA", 50_000_000, 1, 2, 3, 4);
-        Account a2 = new Account("22222", "BUI VAN HUNG", 30_000_000);
-        Account a3 = new Account("33333", "NGUYEN VAN ANH", 30_000_000, 3, 4);
-        Account a4 = new Account("44444", "VU THI THU", 100_000_000);
-        Account a5 = new Account("00000", "HA VAN TU", 10_000_000);
+        Account a1 = new Account("11111", "VU THI HOA", 50_000_000, new ArrayList<>(Arrays.asList(1,2,3,4)));
+        Account a2 = new Account("22222", "BUI VAN HUNG", 30_000_000, new ArrayList<>());
+        Account a3 = new Account("33333", "NGUYEN VAN ANH", 30_000_000, new ArrayList<>(Arrays.asList(3,4)));
+        Account a4 = new Account("44444", "VU THI THU", 100_000_000, new ArrayList<>());
+        Account a5 = new Account("00000", "HA VAN TU", 10_000_000, new ArrayList<>());
         listAccount.add(a1);
         listAccount.add(a2);
         listAccount.add(a3);
@@ -107,6 +108,6 @@ public class Data {
                 }
             }
         }
-        
+
     }
 }

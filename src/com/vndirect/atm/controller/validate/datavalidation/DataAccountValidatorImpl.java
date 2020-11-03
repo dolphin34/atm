@@ -24,7 +24,11 @@ public class DataAccountValidatorImpl implements AccountValidator {
         if (currentAccountNumber.equals(receiveAccountNumber)) {
             throw new InvalidInputException("Receive account number must be difference with perform account number!");
         }
-        return ACCOUNT_SERVICE.findAccountByNumber(receiveAccountNumber);
+        AccountModel accountModel = ACCOUNT_SERVICE.findAccountByNumber(receiveAccountNumber);
+        if (accountModel == null) {
+            throw new NullException("Account does not exist!");
+        }
+        return accountModel;
     }
 
     @Override

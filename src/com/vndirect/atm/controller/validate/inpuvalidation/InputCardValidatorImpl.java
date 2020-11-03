@@ -23,7 +23,7 @@ public class InputCardValidatorImpl implements CardValidator {
     }
 
     @Override
-    public void checkPin(String cardNumber, String pin, int time) throws InvalidInputException, PinWrongException, LockCardException {
+    public void checkPin(String cardNumber, String pin, int time) throws InvalidInputException, PinWrongException, LockCardException, FailActionException {
         pin = StringUtil.formatNumericString(pin);
         StringUtil.isNumericString(pin);
 

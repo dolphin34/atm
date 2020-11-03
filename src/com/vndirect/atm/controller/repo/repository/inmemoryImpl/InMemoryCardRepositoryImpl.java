@@ -19,34 +19,13 @@ public class InMemoryCardRepositoryImpl implements CardRepository {
     }
 
     @Override
-    public boolean checkPin(String cardNumber, String pin) {
-        for (Card c : Data.listCard) {
-            if (c.getNumber().equals(cardNumber) && c.getPin().equals(pin)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean lockCard(String cardNumber) {
-        for (Card c : Data.listCard) {
-            if (c.getNumber().equals(cardNumber)) {
-                c.setActive(false);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean pinChange(String cardNumber, String newPIN) {
+    public boolean updateInfoCard(Card updateCard) {
         boolean success = false;
         for (Card c : Data.listCard) {
-            if (c.getNumber().equals(cardNumber)) {
-                c.setPin(newPIN);
+            if (c.getNumber().equals(updateCard.getNumber())) {
+                c.setPin(updateCard.getPin());
+                c.setActive(updateCard.isActive());
                 success = true;
-                break;
             }
         }
         return success;

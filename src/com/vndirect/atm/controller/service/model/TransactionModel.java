@@ -1,19 +1,24 @@
 package com.vndirect.atm.controller.service.model;
 
-import com.vndirect.atm.controller.repo.entity.Transaction;
 import com.vndirect.atm.util.StringUtil;
 
 import java.util.Date;
 
 public class TransactionModel {
-    private final Transaction.TransactionType transType;
+
+    public enum TransactionModelType {
+        TRANSFER,
+        CASH_WITHDRAWAL
+    }
+
+    private final TransactionModelType transType;
     private final long amount;
     private final long fee;
     private final Date date;
     private final String accountNumberPerform;
     private final String accountNumberTarget;
 
-    public TransactionModel(Transaction.TransactionType transType, long amount, long fee, Date date, String accountNumberPerform, String accountNumberTarget) {
+    public TransactionModel(TransactionModelType transType, long amount, long fee, Date date, String accountNumberPerform, String accountNumberTarget) {
         this.transType = transType;
         this.amount = amount;
         this.fee = fee;
@@ -22,7 +27,7 @@ public class TransactionModel {
         this.accountNumberTarget = accountNumberTarget;
     }
 
-    public Transaction.TransactionType getTransType() {
+    public TransactionModelType getTransType() {
         return transType;
     }
 

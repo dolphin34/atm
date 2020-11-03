@@ -1,8 +1,6 @@
 package com.vndirect.atm.controller.validate.datavalidation;
 
-import com.vndirect.atm.controller.service.CardService;
 import com.vndirect.atm.controller.service.model.CardModel;
-import com.vndirect.atm.controller.service.serviceimpl.CardServiceImpl;
 import com.vndirect.atm.controller.validate.CardValidator;
 import com.vndirect.atm.exception.*;
 
@@ -10,13 +8,22 @@ public class DataCardValidatorImpl implements CardValidator {
 
     @Override
     public CardModel checkCardNumber(String cardNumber) throws NullException, LockCardException {
-        return CARD_SERVICE.findCardByNumber(cardNumber);
+        CardModel cardModel = CARD_SERVICE.findCardByNumber(cardNumber);
+        if (cardModel == null) {
+            throw new NullException("Card does not exist!");
+        }
+        if (!cardModel.isActive()) {
+            throw new LockCardException();
+        }
+        return cardModel;
     }
 
     @Override
-    public void checkPin(String cardNumber, String pin, int time) throws PinWrongException, LockCardException {
+    public void checkPin(String cardNumber, String pin, int time) throws PinWrongException, LockCardException, FailActionException {
         if (time > 3) {
-            CARD_SERVICE.lockCard(cardNumber);
+            if (!CARD_SERVICE.lockCard(cardNumber)){
+                throw new FailActionException("Lock card fail!");
+            }
             throw new LockCardException();
         }
         if (!CARD_SERVICE.checkPin(cardNumber, pin)) {

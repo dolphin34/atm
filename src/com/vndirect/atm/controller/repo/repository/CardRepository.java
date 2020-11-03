@@ -5,7 +5,5 @@ import com.vndirect.atm.controller.repo.entity.Card;
 public interface CardRepository {
 
     Card findCardByNumber(String cardNumber);
-    boolean checkPin(String cardNumber, String pin);
-    boolean lockCard(String cardNumber);
-    boolean pinChange(String cardNumber, String newPIN);
+    boolean updateInfoCard(Card updateCard);
 }

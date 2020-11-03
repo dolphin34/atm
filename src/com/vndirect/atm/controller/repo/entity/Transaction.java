@@ -1,13 +1,21 @@
 package com.vndirect.atm.controller.repo.entity;
 
-import com.vndirect.atm.util.StringUtil;
-
 import java.util.Date;
 
 public class Transaction {
     public enum TransactionType {
-        TRANSFER,
-        CASH_WITHDRAWAL
+        TRANSFER(1),
+        CASH_WITHDRAWAL(2);
+
+        private final int code;
+
+        TransactionType(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return code;
+        }
     }
 
     private final int id;
@@ -54,18 +62,6 @@ public class Transaction {
 
     public String getAccountNumberTarget() {
         return accountNumberTarget;
-    }
-
-    public String toStringCashWithdrawal() {
-        return transType + "\t" + String.format("%25s", "-" + StringUtil.amountToString(amount + fee)) + "\t" + StringUtil.dateToString(date);
-    }
-
-    public String toStringTransferOut() {
-        return transType + "\t    " + String.format("%25s", "-" + StringUtil.amountToString(amount + fee)) + "\t" + StringUtil.dateToString(date) + "\t" + "(to account: " + accountNumberTarget + " )";
-    }
-
-    public String toStringTransferIn() {
-        return transType + "\t    " + String.format("%25s", "+" + StringUtil.amountToString(amount)) + "\t" + StringUtil.dateToString(date) + "\t" + "(from account: " + accountNumberPerform + " )";
     }
 
     public static int compareByDate(Transaction transaction, Transaction otherTransaction) {

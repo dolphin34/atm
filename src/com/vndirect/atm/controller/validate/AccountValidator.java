@@ -1,7 +1,5 @@
 package com.vndirect.atm.controller.validate;
 
-import com.vndirect.atm.controller.repo.entity.Account;
-import com.vndirect.atm.controller.repo.entity.Transaction;
 import com.vndirect.atm.controller.service.AccountService;
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
@@ -19,6 +17,10 @@ public interface AccountValidator {
     TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, String amountTransfer) throws NotEnoughCashException, FailActionException, InvalidInputException;
 
     default AccountModel getAccountByNumber(String accountNumber) throws NullException {
-        return ACCOUNT_SERVICE.findAccountByNumber(accountNumber);
+        AccountModel accountModel = ACCOUNT_SERVICE.findAccountByNumber(accountNumber);
+        if (accountModel == null) {
+            throw new NullException("Account does not exist!");
+        }
+        return accountModel;
     }
 }

@@ -1,6 +1,5 @@
 package com.vndirect.atm.userinterface.consoleviewImpl;
 
-import com.vndirect.atm.controller.repo.entity.Transaction;
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.CardModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
@@ -33,12 +32,27 @@ public class ConsoleViewImpl implements View {
         }
     }
 
-    private void getCurrentAccount(){
-        try {
-            currentAccount = ACCOUNT_VALIDATOR.getAccountByNumber(currentCard.getAccountNumber());
-        } catch (NullException e) {
-            System.out.println(e.getMessage());
-        }
+    private void getCurrentAccount() throws NullException {
+        currentAccount = ACCOUNT_VALIDATOR.getAccountByNumber(currentCard.getAccountNumber());
+    }
+
+    private int enterChoiceOfAction(int quantityChoices) {
+        int choice;
+        do {
+            System.out.print("Your choice: ");
+            try {
+                choice = scanner.nextInt();
+                scanner.nextLine();
+                if (choice > quantityChoices || choice < 1) {
+                    System.out.println("(Enter a number in list options)");
+                }
+            } catch (InputMismatchException e) {
+                scanner.nextLine();
+                choice = -1;
+                System.out.println("(Enter a number in list options)");
+            }
+        } while (choice > quantityChoices || choice < 1);
+        return choice;
     }
 
     @Override
@@ -73,7 +87,7 @@ public class ConsoleViewImpl implements View {
             CARD_VALIDATOR.checkPin(currentCard.getNumber(), pin, time);
             getCurrentAccount();
             showMenu();
-        } catch (InvalidInputException e) {
+        } catch (InvalidInputException | FailActionException | NullException e) {
             System.out.println(e.getMessage());
         } catch (PinWrongException e) {
             System.out.println(e.getMessage());
@@ -129,7 +143,7 @@ public class ConsoleViewImpl implements View {
         try {
             CARD_VALIDATOR.pinChange(currentCard.getNumber(), newPin);
             System.out.println("Pin change success! Login again!");
-            insertCard();
+            enterPin(1);
         } catch (InvalidInputException | FailActionException e) {
             System.out.println(e.getMessage());
 
@@ -223,7 +237,7 @@ public class ConsoleViewImpl implements View {
                     logout();
                     break;
             }
-        } catch (InvalidInputException | NotEnoughCashException | FailActionException e) {
+        } catch (InvalidInputException | NotEnoughCashException | FailActionException | NullException e) {
             System.out.println(e.getMessage());
 
             showOptions("Try again", "Menu");
@@ -262,8 +276,8 @@ public class ConsoleViewImpl implements View {
         }
     }
 
-    @Override
     public void enterAmountTransfer(AccountModel receiveAccount) {
+        System.out.println("-------------------------");
         System.out.println("Account receive : ");
         System.out.println("Name: " + receiveAccount.getName());
         System.out.println("Account number: " + receiveAccount.getNumber());
@@ -274,32 +288,45 @@ public class ConsoleViewImpl implements View {
     }
 
     @Override
-    public void transfer(AccountModel receiveAccountNumber, String amountTransfer) {
+    public void transfer(AccountModel receiveAccount, String amountTransfer) {
         try {
-            TransactionModel transactionModel = ACCOUNT_VALIDATOR.transfer(currentAccount.getNumber(), receiveAccountNumber.getNumber(), amountTransfer);
+            TransactionModel transactionModel = ACCOUNT_VALIDATOR.transfer(currentAccount.getNumber(), receiveAccount.getNumber(), amountTransfer);
             getCurrentAccount();
 
-            System.out.println("Account number: " + currentAccount.getNumber());
+            System.out.println("-------------------------");
+            System.out.println("Transfer successfully!");
+            System.out.println("Account number performed: " + currentAccount.getNumber());
             System.out.println("User name: " + currentAccount.getName());
-            System.out.println("Account number received: " + receiveAccountNumber.getNumber());
-            System.out.println("User name: " + receiveAccountNumber.getName());
+            System.out.println("Account number received: " + receiveAccount.getNumber());
+            System.out.println("User name: " + receiveAccount.getName());
             System.out.println("Amount transfer: " + "-" + StringUtil.amountToString(transactionModel.getAmount()));
             System.out.println("Transfer fee: " + "-" + StringUtil.amountToString(transactionModel.getFee()));
             System.out.println("Transfer time: " + StringUtil.dateToString(transactionModel.getDate()));
             System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
-        } catch (NotEnoughCashException | FailActionException | InvalidInputException e) {
-            System.out.println(e.getMessage());
-        }
 
-        showOptions("Menu", "Logout");
-        int choice = enterChoiceOfAction(2);
-        switch (choice) {
-            case 1:
-                showMenu();
-                break;
-            case 2:
-                logout();
-                break;
+            showOptions("Menu", "Logout");
+            int choice = enterChoiceOfAction(2);
+            switch (choice) {
+                case 1:
+                    showMenu();
+                    break;
+                case 2:
+                    logout();
+                    break;
+            }
+        } catch (NotEnoughCashException | FailActionException | InvalidInputException | NullException e) {
+            System.out.println(e.getMessage());
+
+            showOptions("Try again", "Menu");
+            int choice = enterChoiceOfAction(2);
+            switch (choice) {
+                case 1:
+                    enterAmountTransfer(receiveAccount);
+                    break;
+                case 2:
+                    showMenu();
+                    break;
+            }
         }
     }
 
@@ -307,15 +334,15 @@ public class ConsoleViewImpl implements View {
     public void displayStatement() {
         System.out.println("-------------------------");
         System.out.println("List transactions :");
-        for (Transaction transaction : currentAccount.getListTransaction()) {
-            if (transaction.getTransType() == Transaction.TransactionType.TRANSFER) {
-                if (currentAccount.getNumber().equals(transaction.getAccountNumberPerform())) {
-                    System.out.println(transaction.toStringTransferOut());
+        for (TransactionModel transactionModel : currentAccount.getListTransactionModel()) {
+            if (transactionModel.getTransType() == TransactionModel.TransactionModelType.TRANSFER) {
+                if (currentAccount.getNumber().equals(transactionModel.getAccountNumberPerform())) {
+                    System.out.println(transactionModel.toStringTransferOut());
                 } else {
-                    System.out.println(transaction.toStringTransferIn());
+                    System.out.println(transactionModel.toStringTransferIn());
                 }
             } else {
-                System.out.println(transaction.toStringCashWithdrawal());
+                System.out.println(transactionModel.toStringCashWithdrawal());
             }
         }
 
@@ -336,23 +363,5 @@ public class ConsoleViewImpl implements View {
         currentCard = null;
         currentAccount = null;
         insertCard();
-    }
-
-    private int enterChoiceOfAction(int quantityChoices) {
-        int choice;
-        do {
-            System.out.print("Your choice: ");
-            try {
-                choice = scanner.nextInt();
-                scanner.nextLine();
-                if (choice > quantityChoices || choice < 1)
-                    System.out.println("(Enter a number in list options)");
-            } catch (InputMismatchException e) {
-                scanner.nextLine();
-                choice = -1;
-                System.out.println("(Enter a number in list options)");
-            }
-        } while (choice > quantityChoices || choice < 1);
-        return choice;
     }
 }

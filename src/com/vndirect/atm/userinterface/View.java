@@ -22,7 +22,6 @@ public interface View {
     void cashWithdrawal(String amount);
 
     void enterAccountTransfer();
-    void enterAmountTransfer(AccountModel receiveAccount);
     void transfer(AccountModel receiveAccount, String amountTransfer);
 
     void displayStatement();
