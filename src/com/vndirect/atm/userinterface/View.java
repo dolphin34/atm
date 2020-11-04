@@ -13,17 +13,13 @@ public interface View {
 
     void insertCard();
     void enterPin(int time);
-
     void showMenu();
     void pinChange();
     void displayBalanceInquiry();
-
     void showOptionsCashWithdrawal();
     void cashWithdrawal(String amount);
-
     void enterAccountTransfer();
     void transfer(AccountModel receiveAccount, String amountTransfer);
-
     void displayStatement();
     void logout();
 }

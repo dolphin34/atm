@@ -11,7 +11,8 @@ import com.vndirect.atm.controller.service.AccountService;
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
 import com.vndirect.atm.exception.FailActionException;
-import com.vndirect.atm.exception.NotEnoughCashException;
+import com.vndirect.atm.exception.NotEnoughBalanceException;
+import com.vndirect.atm.exception.NotEnoughCashInAtmException;
 import com.vndirect.atm.util.Constants;
 
 import java.util.ArrayList;
@@ -48,17 +49,17 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public int[][] cashWithdrawal(String accountNumber, long amountWithdrawal) throws FailActionException, NotEnoughCashException {
+    public int[][] cashWithdrawal(String accountNumber, long amountWithdrawal) throws FailActionException, NotEnoughCashInAtmException, NotEnoughBalanceException {
         Account account = ACCOUNT_REPOSITORY.findByAccountNumber(accountNumber);
 
         boolean isValidAmount = amountWithdrawal <= account.getAmount() - Constants.MINIMUM_BALANCE;
         if (!isValidAmount) {
-            throw new NotEnoughCashException("Unavailable balance!");
+            throw new NotEnoughBalanceException();
         }
 
         int[][] cashOut = cashOut(amountWithdrawal);
         if (cashOut == null) {
-            throw new NotEnoughCashException("Not enough money in ATM!");
+            throw new NotEnoughCashInAtmException();
         }
 
         Transaction newTransaction = new Transaction(Data.listTransaction.size() + 1, Transaction.TransactionType.CASH_WITHDRAWAL,
@@ -93,13 +94,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, long amountTransfer) throws NotEnoughCashException, FailActionException {
+    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, long amountTransfer) throws FailActionException, NotEnoughBalanceException {
         Account currentAccount = ACCOUNT_REPOSITORY.findByAccountNumber(currentAccountNumber);
         Account receiveAccount = ACCOUNT_REPOSITORY.findByAccountNumber(receiveAccountNumber);
 
         boolean isValidAmount = amountTransfer + Constants.TRANSFER_FEE <= currentAccount.getAmount() - Constants.MINIMUM_BALANCE;
         if (!isValidAmount) {
-            throw new NotEnoughCashException("Unavailable balance!");
+            throw new NotEnoughBalanceException();
         }
 
         Transaction newTransaction = new Transaction(Data.listTransaction.size() + 1, Transaction.TransactionType.TRANSFER,

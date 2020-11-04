@@ -4,17 +4,14 @@ import com.vndirect.atm.controller.repo.data.Data;
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
 import com.vndirect.atm.controller.validate.AccountValidator;
-import com.vndirect.atm.exception.FailActionException;
-import com.vndirect.atm.exception.InvalidInputException;
-import com.vndirect.atm.exception.NotEnoughCashException;
-import com.vndirect.atm.exception.NullException;
+import com.vndirect.atm.exception.*;
 
 public class DataAccountValidatorImpl implements AccountValidator {
     @Override
-    public int[][] cashWithdrawal(String accountNumber, String amount) throws NotEnoughCashException, FailActionException {
+    public int[][] cashWithdrawal(String accountNumber, String amount) throws NotEnoughCashInAtmException, FailActionException, NotEnoughBalanceException {
         boolean isEnoughCashInAtm = Long.parseLong(amount) <= Data.CashInAtm.sumOfCash();
         if (!isEnoughCashInAtm) {
-            throw new NotEnoughCashException("Not enough money in ATM!");
+            throw new NotEnoughCashInAtmException();
         }
         return ACCOUNT_SERVICE.cashWithdrawal(accountNumber, Long.parseLong(amount));
     }
@@ -32,7 +29,7 @@ public class DataAccountValidatorImpl implements AccountValidator {
     }
 
     @Override
-    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, String amountTransfer) throws NotEnoughCashException, FailActionException {
+    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, String amountTransfer) throws FailActionException, NotEnoughBalanceException {
         return ACCOUNT_SERVICE.transfer(currentAccountNumber, receiveAccountNumber, Long.parseLong(amountTransfer));
     }
 }

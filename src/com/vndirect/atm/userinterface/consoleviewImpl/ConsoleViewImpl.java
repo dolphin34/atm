@@ -15,8 +15,14 @@ import java.util.Scanner;
 public class ConsoleViewImpl implements View {
 
     private static final Scanner scanner = new Scanner(System.in);
+
     public static CardModel currentCard;
     public static AccountModel currentAccount;
+
+    @FunctionalInterface
+    interface Action {
+        void run();
+    }
 
     private String input(String notifyString) {
         System.out.println("-------------------------");
@@ -30,10 +36,6 @@ public class ConsoleViewImpl implements View {
         for (int i = 0; i < options.length; i++) {
             System.out.println(i+1 + ". " + options[i]);
         }
-    }
-
-    private void getCurrentAccount() throws NullException {
-        currentAccount = ACCOUNT_VALIDATOR.getAccountByNumber(currentCard.getAccountNumber());
     }
 
     private int enterChoiceOfAction(int quantityChoices) {
@@ -55,6 +57,27 @@ public class ConsoleViewImpl implements View {
         return choice;
     }
 
+    private void showTwoNextAction(String nameOfAction1, String nameOfAction2, Action action1, Action action2) {
+        showOptions(nameOfAction1, nameOfAction2);
+        int choice = enterChoiceOfAction(2);
+        switch (choice) {
+            case 1:
+                action1.run();
+                break;
+            case 2:
+                action2.run();
+                break;
+        }
+    }
+
+    private void getCurrentAccount() throws FailActionException {
+        try {
+            currentAccount = ACCOUNT_VALIDATOR.getAccountByNumber(currentCard.getAccountNumber());
+        } catch (NullException e) {
+            throw new FailActionException(e.getMessage());
+        }
+    }
+
     @Override
     public void insertCard() {
         String notify = "Card number (8 digit and start with 0800): ";
@@ -65,16 +88,7 @@ public class ConsoleViewImpl implements View {
         } catch (InvalidInputException | NullException | LockCardException e) {
             System.out.println(e.getMessage());
 
-            showOptions("Try again", "Out");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    insertCard();
-                    break;
-                case 2:
-                    System.exit(0);
-                    break;
-            }
+            showTwoNextAction("Try again", "Out", this::insertCard, () -> System.exit(0));
         }
     }
 
@@ -82,29 +96,25 @@ public class ConsoleViewImpl implements View {
     public void enterPin(int time) {
         String notify = "Hello, " + currentCard.getName() + "\nPin (6 digits): ";
         String pin = input(notify);
-
+        int timeWrong;
         try {
             CARD_VALIDATOR.checkPin(currentCard.getNumber(), pin, time);
             getCurrentAccount();
             showMenu();
-        } catch (InvalidInputException | FailActionException | NullException e) {
+        } catch (InvalidInputException | FailActionException e) {
             System.out.println(e.getMessage());
+
+            timeWrong = time;
+            showTwoNextAction("Try again", "Go back", () -> enterPin(timeWrong), this::insertCard);
         } catch (PinWrongException e) {
             System.out.println(e.getMessage());
-            time++;
+
+            timeWrong = ++time;
+            showTwoNextAction("Try again", "Go back", () -> enterPin(timeWrong), this::insertCard);
         } catch (LockCardException e) {
             System.out.println(e.getMessage());
+
             insertCard();
-        }
-        showOptions("Try again", "Go back");
-        int choice = enterChoiceOfAction(2);
-        switch (choice) {
-            case 1:
-                enterPin(time);
-                break;
-            case 2:
-                insertCard();
-                break;
         }
     }
 
@@ -147,16 +157,7 @@ public class ConsoleViewImpl implements View {
         } catch (InvalidInputException | FailActionException e) {
             System.out.println(e.getMessage());
 
-            showOptions("Try again", "Go back");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    pinChange();
-                    break;
-                case 2:
-                    showMenu();
-                    break;
-            }
+            showTwoNextAction("Try again", "Menu", this::pinChange, this::showMenu);
         }
     }
 
@@ -168,16 +169,7 @@ public class ConsoleViewImpl implements View {
         System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
         System.out.println("Time: " + StringUtil.dateToString(new Date()));
 
-        showOptions("Menu", "Logout");
-        int choice = enterChoiceOfAction(2);
-        switch (choice) {
-            case 1:
-                showMenu();
-                break;
-            case 2:
-                logout();
-                break;
-        }
+        showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
     }
 
     @Override
@@ -227,29 +219,15 @@ public class ConsoleViewImpl implements View {
                 }
             }
 
-            showOptions("Menu", "Logout");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    showMenu();
-                    break;
-                case 2:
-                    logout();
-                    break;
-            }
-        } catch (InvalidInputException | NotEnoughCashException | FailActionException | NullException e) {
+            showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+        } catch (InvalidInputException| NotEnoughBalanceException | FailActionException  e) {
             System.out.println(e.getMessage());
 
-            showOptions("Try again", "Menu");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    enterOtherAmountCashWithdrawal();
-                    break;
-                case 2:
-                    showMenu();
-                    break;
-            }
+            showTwoNextAction("Try again", "Menu", this::enterOtherAmountCashWithdrawal, this::showMenu);
+        } catch (NotEnoughCashInAtmException e) {
+            System.out.println(e.getMessage());
+
+            showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
         }
     }
 
@@ -263,16 +241,7 @@ public class ConsoleViewImpl implements View {
         } catch (InvalidInputException | NullException e) {
             System.out.println(e.getMessage());
 
-            showOptions("Try again", "Menu");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    enterAccountTransfer();
-                    break;
-                case 2:
-                    showMenu();
-                    break;
-            }
+            showTwoNextAction("Try again", "Menu", this::enterAccountTransfer, this::showMenu);
         }
     }
 
@@ -304,29 +273,11 @@ public class ConsoleViewImpl implements View {
             System.out.println("Transfer time: " + StringUtil.dateToString(transactionModel.getDate()));
             System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
 
-            showOptions("Menu", "Logout");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    showMenu();
-                    break;
-                case 2:
-                    logout();
-                    break;
-            }
-        } catch (NotEnoughCashException | FailActionException | InvalidInputException | NullException e) {
+            showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+        } catch (InvalidInputException | NotEnoughBalanceException | FailActionException e) {
             System.out.println(e.getMessage());
 
-            showOptions("Try again", "Menu");
-            int choice = enterChoiceOfAction(2);
-            switch (choice) {
-                case 1:
-                    enterAmountTransfer(receiveAccount);
-                    break;
-                case 2:
-                    showMenu();
-                    break;
-            }
+            showTwoNextAction("Try again", "Menu", () -> enterAmountTransfer(receiveAccount), this::showMenu);
         }
     }
 
@@ -346,16 +297,7 @@ public class ConsoleViewImpl implements View {
             }
         }
 
-        showOptions("Menu", "Logout");
-        int choice = enterChoiceOfAction(2);
-        switch (choice) {
-            case 1:
-                showMenu();
-                break;
-            case 2:
-                logout();
-                break;
-        }
+        showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
     }
 
     @Override

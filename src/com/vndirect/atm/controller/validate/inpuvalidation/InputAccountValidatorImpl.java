@@ -4,10 +4,7 @@ import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
 import com.vndirect.atm.controller.validate.AccountValidator;
 import com.vndirect.atm.controller.validate.datavalidation.DataAccountValidatorImpl;
-import com.vndirect.atm.exception.FailActionException;
-import com.vndirect.atm.exception.InvalidInputException;
-import com.vndirect.atm.exception.NotEnoughCashException;
-import com.vndirect.atm.exception.NullException;
+import com.vndirect.atm.exception.*;
 import com.vndirect.atm.util.StringUtil;
 
 public class InputAccountValidatorImpl implements AccountValidator {
@@ -15,7 +12,7 @@ public class InputAccountValidatorImpl implements AccountValidator {
     DataAccountValidatorImpl DATA_ACCOUNT_VALIDATOR = new DataAccountValidatorImpl();
 
     @Override
-    public int[][] cashWithdrawal(String accountNumber, String amount) throws InvalidInputException, NotEnoughCashException, FailActionException {
+    public int[][] cashWithdrawal(String accountNumber, String amount) throws InvalidInputException, NotEnoughCashInAtmException, FailActionException, NotEnoughBalanceException {
         amount = StringUtil.formatNumericString(amount);
         StringUtil.isNumericString(amount);
 
@@ -39,7 +36,7 @@ public class InputAccountValidatorImpl implements AccountValidator {
     }
 
     @Override
-    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, String amountTransfer) throws NotEnoughCashException, FailActionException, InvalidInputException {
+    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, String amountTransfer) throws FailActionException, InvalidInputException, NotEnoughBalanceException {
         amountTransfer = StringUtil.formatNumericString(amountTransfer);
         StringUtil.isNumericString(amountTransfer);
 
