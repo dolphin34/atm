@@ -199,6 +199,7 @@ public class ConsoleViewImpl implements View {
         }
     }
 
+    @Override
     public void enterOtherAmountCashWithdrawal() {
         String notify = "Enter number amount (multiples of 50,000): ";
         String amount = input(notify);

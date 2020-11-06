@@ -19,6 +19,7 @@ public interface View {
     void showOptionsCashWithdrawal();
     void cashWithdrawal(String amount);
     void enterAccountTransfer();
+    void enterOtherAmountCashWithdrawal();
     void transfer(AccountModel receiveAccount, String amountTransfer);
     void displayStatement();
     void logout();

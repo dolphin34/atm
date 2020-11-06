@@ -16,7 +16,7 @@ public interface AccountValidator {
     default AccountModel getAccountByNumber(String accountNumber) throws NullException {
         AccountModel accountModel = ACCOUNT_SERVICE.findAccountByNumber(accountNumber);
         if (accountModel == null) {
-            throw new NullException("Account does not exist!");
+            throw new NullException("This card doesn't link with any account!");
         }
         return accountModel;
     }
