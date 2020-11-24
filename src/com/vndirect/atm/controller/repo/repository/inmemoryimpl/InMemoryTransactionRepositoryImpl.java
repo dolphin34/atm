@@ -1,8 +1,8 @@
-package com.vndirect.atm.controller.repo.repository.inmemoryImpl;
+package com.vndirect.atm.controller.repo.repository.inmemoryimpl;
 
-import com.vndirect.atm.controller.repo.data.Data;
 import com.vndirect.atm.controller.repo.repository.TransactionRepository;
 import com.vndirect.atm.controller.repo.entity.Transaction;
+import com.vndirect.atm.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,14 +11,14 @@ public class InMemoryTransactionRepositoryImpl implements TransactionRepository 
 
     @Override
     public boolean insertTransaction(Transaction transaction) {
-        return Data.listTransaction.add(transaction);
+        return Constants.DATA.getListTransaction().add(transaction);
     }
 
     @Override
     public List<Transaction> getListTransactionByListId(List<Integer> listTransId) {
         List<Transaction> result = new ArrayList<>();
         for (Integer transId : listTransId) {
-            for (Transaction trans : Data.listTransaction) {
+            for (Transaction trans : Constants.DATA.getListTransaction()) {
                 if (trans.getId() == transId) {
                     result.add(trans);
                 }

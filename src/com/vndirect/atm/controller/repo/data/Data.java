@@ -5,21 +5,25 @@ import com.vndirect.atm.controller.repo.entity.Card;
 import com.vndirect.atm.controller.repo.entity.Transaction;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class Data {
-    public static List<Card> listCard = new ArrayList<>();
-    public static List<Account> listAccount = new ArrayList<>();
-    public static List<Transaction> listTransaction = new ArrayList<>();
+    private final List<Card> listCard = new ArrayList<>();
+    private final List<Account> listAccount = new ArrayList<>();
+    private final List<Transaction> listTransaction = new ArrayList<>();
+    private final Map<ValueOfCash, Integer> cashInAtm = new EnumMap<>(ValueOfCash.class);
 
-    static {
+    public Data() {
         // initialized list card
-        Card c1 = new Card("08001001", "123456", "VU THI HOA", "11111", true);
-        Card c2 = new Card("08001002", "123456", "BUI VAN HUNG", "22222", true);
-        Card c3 = new Card("08001003", "123456", "NGUYEN VAN ANH", "33333", true);
-        Card c4 = new Card("08001004", "123456", "VU THI THU", "44444", true);
-        Card c5 = new Card("08001005", "123456", "HA VAN HUY", "55555", true);
-        Card c6 = new Card("08001006", "123456", "NGUYEN THI THU HA", "666666", true);
+        String password = "123456";
+        Card c1 = new Card("08001001", password, "VU THI HOA", "11111", true);
+        Card c2 = new Card("08001002", password, "BUI VAN HUNG", "22222", true);
+        Card c3 = new Card("08001003", password, "NGUYEN VAN ANH", "33333", true);
+        Card c4 = new Card("08001004", password, "VU THI THU", "44444", true);
+        Card c5 = new Card("08001005", password, "HA VAN HUY", "55555", true);
+        Card c6 = new Card("08001006", password, "NGUYEN THI THU HA", "666666", true);
         listCard.add(c1);
         listCard.add(c2);
         listCard.add(c3);
@@ -39,71 +43,58 @@ public class Data {
         listAccount.add(a4);
         listAccount.add(a5);
 
-        // initialized list transaction
-//        Transaction t1 = new Transaction(1, Transaction.TransactionType.CASH_WITHDRAWAL, 3_000_000, 1000, new Date(), "11111", null);
-//        Transaction t2 = new Transaction(3, Transaction.TransactionType.TRANSFER, 10_000_000, 2000, new Date(), "11111", "33333");
-//        listTransaction.add(t1);
-//        listTransaction.add(t2);
+        // initialized cash in atm
+        cashInAtm.put(ValueOfCash.FIFTY_THOUSAND, 200);
+        cashInAtm.put(ValueOfCash.HUNDRED_THOUSAND, 100);
+        cashInAtm.put(ValueOfCash.TWO_HUNDRED_THOUSAND, 50);
+        cashInAtm.put(ValueOfCash.FIVE_HUNDRED_THOUSAND, 20);
     }
 
-    public enum CashInAtm {
-        //initialized cash in atm, sum cash: 30,000,000 VND
-        CASH_IN_ATM_50(60, 50_000),
-        CASH_IN_ATM_100(100, 100_000),
-        CASH_IN_ATM_200(10, 200_000),
-        CASH_IN_ATM_500(30, 500_000);
+    public List<Card> getListCard() {
+        return this.listCard;
+    }
 
-        private int quantity;
+    public List<Account> getListAccount() {
+        return this.listAccount;
+    }
+
+    public List<Transaction> getListTransaction() {
+        return this.listTransaction;
+    }
+
+    public Map<ValueOfCash, Integer> getCashInAtm() {
+        return this.cashInAtm;
+    }
+
+    public void updateCashInAtm(List<Map.Entry<Integer, Integer>> outCash) {
+        ValueOfCash valueOfCash;
+        for (Map.Entry<Integer, Integer> e : outCash) {
+            valueOfCash = null;
+            for (ValueOfCash v : ValueOfCash.values()) {
+                if (e.getKey().equals(v.getValue())) {
+                    valueOfCash = v;
+                    break;
+                }
+            }
+            int oldQuantity = cashInAtm.get(valueOfCash);
+            cashInAtm.put(valueOfCash, oldQuantity - e.getValue());
+        }
+    }
+
+    public enum ValueOfCash {
+        FIFTY_THOUSAND(50_000),
+        HUNDRED_THOUSAND(100_000),
+        TWO_HUNDRED_THOUSAND(200_000),
+        FIVE_HUNDRED_THOUSAND(500_000);
+
         private final int value;
 
-        CashInAtm(int quantity, int value) {
-            this.quantity = quantity;
+        ValueOfCash(int value) {
             this.value = value;
-        }
-
-        public int getQuantity() {
-            return quantity;
-        }
-
-        public void setQuantity(int quantity) {
-            this.quantity = quantity;
         }
 
         public int getValue() {
             return value;
         }
-
-        public static long sumOfCash() {
-            long sum = 0;
-            for (CashInAtm c : CashInAtm.values()) {
-                sum += c.quantity * c.value;
-            }
-            return sum;
-        }
-
-        public static int[][] getCashInATM() {
-            int[][] temp = new int[3][4];
-            temp[0][0] = Data.CashInAtm.CASH_IN_ATM_500.getValue();
-            temp[0][1] = Data.CashInAtm.CASH_IN_ATM_200.getValue();
-            temp[0][2] = Data.CashInAtm.CASH_IN_ATM_100.getValue();
-            temp[0][3] = Data.CashInAtm.CASH_IN_ATM_50.getValue();
-
-            temp[1][0] = Data.CashInAtm.CASH_IN_ATM_500.getQuantity();
-            temp[1][1] = Data.CashInAtm.CASH_IN_ATM_200.getQuantity();
-            temp[1][2] = Data.CashInAtm.CASH_IN_ATM_100.getQuantity();
-            temp[1][3] = Data.CashInAtm.CASH_IN_ATM_50.getQuantity();
-            return temp;
-        }
-
-        public static void updateQuantity(int[][] quantity) {
-            for (int i = 0; i < 4; i++) {
-                for (CashInAtm x: CashInAtm.values()) {
-                    if (x.getValue() == quantity[0][i]) {
-                        x.setQuantity(quantity[1][i]);
-                    }
-                }
-            }
-        }
-
     }
 }

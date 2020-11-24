@@ -6,10 +6,13 @@ import com.vndirect.atm.controller.service.model.TransactionModel;
 import com.vndirect.atm.controller.service.serviceimpl.AccountServiceImpl;
 import com.vndirect.atm.exception.*;
 
+import java.util.List;
+import java.util.Map;
+
 public interface AccountValidator {
 
     AccountService ACCOUNT_SERVICE = new AccountServiceImpl();
-    int[][] cashWithdrawal(String accountNumber, String amount) throws InvalidInputException, NotEnoughCashInAtmException, FailActionException, NotEnoughBalanceException;
+    List<Map.Entry<Integer, Integer>> cashWithdrawal(String accountNumber, String amount) throws InvalidInputException, NotEnoughCashInAtmException, FailActionException, NotEnoughBalanceException;
     AccountModel checkReceiveAccountNumber(String currentAccountNumber, String receiveAccountNumber) throws InvalidInputException, NullException;
     TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, String amountTransfer) throws FailActionException, InvalidInputException, NotEnoughBalanceException;
 

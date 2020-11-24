@@ -1,15 +1,15 @@
-package com.vndirect.atm.controller.repo.repository.inmemoryImpl;
+package com.vndirect.atm.controller.repo.repository.inmemoryimpl;
 
-import com.vndirect.atm.controller.repo.data.Data;
-import com.vndirect.atm.controller.repo.repository.CardRepository;
 import com.vndirect.atm.controller.repo.entity.Card;
+import com.vndirect.atm.controller.repo.repository.CardRepository;
+import com.vndirect.atm.util.Constants;
 
 public class InMemoryCardRepositoryImpl implements CardRepository {
 
     @Override
     public Card findCardByNumber(String cardNumber) {
         Card card = null;
-        for (Card c : Data.listCard) {
+        for (Card c : Constants.DATA.getListCard()) {
             if (c.getNumber().equals(cardNumber)) {
                 card = c;
                 break;
@@ -21,7 +21,7 @@ public class InMemoryCardRepositoryImpl implements CardRepository {
     @Override
     public boolean updateInfoCard(Card updateCard) {
         boolean success = false;
-        for (Card c : Data.listCard) {
+        for (Card c : Constants.DATA.getListCard()) {
             if (c.getNumber().equals(updateCard.getNumber())) {
                 c.setPin(updateCard.getPin());
                 c.setActive(updateCard.isActive());

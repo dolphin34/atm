@@ -6,7 +6,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class StringUtil {
+public class StringUtils {
+
+    private StringUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static String formatNumericString(String str) {
         str = str.trim();
         str = str.replaceAll("\\s+", "");
@@ -24,7 +29,7 @@ public class StringUtil {
     }
 
     public static String amountToString(long amount) {
-        return String.format("%,d", amount) + " VND   ";
+        return String.format("%,d", amount) + " VND  ";
     }
 
     public static String dateToString(Date date) {

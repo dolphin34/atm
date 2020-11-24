@@ -2,7 +2,7 @@ package com.vndirect.atm.controller.service.serviceimpl;
 
 import com.vndirect.atm.controller.repo.entity.Card;
 import com.vndirect.atm.controller.repo.repository.CardRepository;
-import com.vndirect.atm.controller.repo.repository.inmemoryImpl.InMemoryCardRepositoryImpl;
+import com.vndirect.atm.controller.repo.repository.inmemoryimpl.InMemoryCardRepositoryImpl;
 import com.vndirect.atm.controller.service.CardService;
 import com.vndirect.atm.controller.service.model.CardModel;
 

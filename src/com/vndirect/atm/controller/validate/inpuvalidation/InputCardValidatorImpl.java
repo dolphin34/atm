@@ -4,7 +4,7 @@ import com.vndirect.atm.controller.service.model.CardModel;
 import com.vndirect.atm.controller.validate.CardValidator;
 import com.vndirect.atm.controller.validate.datavalidation.DataCardValidatorImpl;
 import com.vndirect.atm.exception.*;
-import com.vndirect.atm.util.StringUtil;
+import com.vndirect.atm.util.StringUtils;
 
 public class InputCardValidatorImpl implements CardValidator {
 
@@ -12,8 +12,8 @@ public class InputCardValidatorImpl implements CardValidator {
 
     @Override
     public CardModel checkCardNumber(String cardNumber) throws InvalidInputException, NullException, LockCardException {
-        cardNumber = StringUtil.formatNumericString(cardNumber);
-        StringUtil.isNumericString(cardNumber);
+        cardNumber = StringUtils.formatNumericString(cardNumber);
+        StringUtils.isNumericString(cardNumber);
 
         boolean isValidCardNumber = cardNumber.length() == 8 && cardNumber.startsWith("0800");
         if (!isValidCardNumber) {
@@ -24,8 +24,8 @@ public class InputCardValidatorImpl implements CardValidator {
 
     @Override
     public void checkPin(String cardNumber, String pin, int time) throws InvalidInputException, PinWrongException, LockCardException, FailActionException {
-        pin = StringUtil.formatNumericString(pin);
-        StringUtil.isNumericString(pin);
+        pin = StringUtils.formatNumericString(pin);
+        StringUtils.isNumericString(pin);
 
         if (pin.length() != 6) {
             throw new InvalidInputException();
@@ -35,8 +35,8 @@ public class InputCardValidatorImpl implements CardValidator {
 
     @Override
     public void pinChange(String cardNumber, String newPin) throws InvalidInputException, FailActionException {
-        newPin = StringUtil.formatNumericString(newPin);
-        StringUtil.isNumericString(newPin);
+        newPin = StringUtils.formatNumericString(newPin);
+        StringUtils.isNumericString(newPin);
 
         if (newPin.length() != 6) {
             throw new InvalidInputException();

@@ -1,18 +1,16 @@
 package com.vndirect.atm.controller.validate.datavalidation;
 
-import com.vndirect.atm.controller.repo.data.Data;
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
 import com.vndirect.atm.controller.validate.AccountValidator;
 import com.vndirect.atm.exception.*;
 
+import java.util.List;
+import java.util.Map;
+
 public class DataAccountValidatorImpl implements AccountValidator {
     @Override
-    public int[][] cashWithdrawal(String accountNumber, String amount) throws NotEnoughCashInAtmException, FailActionException, NotEnoughBalanceException {
-        boolean isEnoughCashInAtm = Long.parseLong(amount) <= Data.CashInAtm.sumOfCash();
-        if (!isEnoughCashInAtm) {
-            throw new NotEnoughCashInAtmException();
-        }
+    public List<Map.Entry<Integer, Integer>> cashWithdrawal(String accountNumber, String amount) throws NotEnoughCashInAtmException, FailActionException, NotEnoughBalanceException {
         return ACCOUNT_SERVICE.cashWithdrawal(accountNumber, Long.parseLong(amount));
     }
 

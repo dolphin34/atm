@@ -1,4 +1,4 @@
-package com.vndirect.atm.userinterface.consoleviewImpl;
+package com.vndirect.atm.userinterface.consoleviewimpl;
 
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.CardModel;
@@ -6,32 +6,34 @@ import com.vndirect.atm.controller.service.model.TransactionModel;
 import com.vndirect.atm.exception.*;
 import com.vndirect.atm.userinterface.View;
 import com.vndirect.atm.util.Constants;
-import com.vndirect.atm.util.StringUtil;
+import com.vndirect.atm.util.StringUtils;
 
-import java.util.Date;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 
 public class ConsoleViewImpl implements View {
 
     private static final Scanner scanner = new Scanner(System.in);
 
-    public static CardModel currentCard;
-    public static AccountModel currentAccount;
+    private CardModel currentCard;
+    private AccountModel currentAccount;
 
     @FunctionalInterface
     interface Action {
         void run();
     }
 
+    private static final String MULTI_DASH = "--------------------";
+    private static final String STRING_TRY_AGAIN = "Try again";
+    private static final String STRING_LOGOUT = "Logout";
+
     private String input(String notifyString) {
-        System.out.println("-------------------------");
+        System.out.println(MULTI_DASH);
         System.out.println(notifyString);
         return scanner.nextLine();
     }
 
     private void showOptions(String... options) {
-        System.out.println("----------");
+        System.out.println(MULTI_DASH);
         System.out.println("Options :");
         for (int i = 0; i < options.length; i++) {
             System.out.println(i+1 + ". " + options[i]);
@@ -67,6 +69,8 @@ public class ConsoleViewImpl implements View {
             case 2:
                 action2.run();
                 break;
+            default:
+                break;
         }
     }
 
@@ -88,7 +92,7 @@ public class ConsoleViewImpl implements View {
         } catch (InvalidInputException | NullException | LockCardException e) {
             System.out.println(e.getMessage());
 
-            showTwoNextAction("Try again", "Out", this::insertCard, () -> System.exit(0));
+            showTwoNextAction(STRING_TRY_AGAIN, "Out", this::insertCard, () -> System.exit(0));
         }
     }
 
@@ -105,12 +109,12 @@ public class ConsoleViewImpl implements View {
             System.out.println(e.getMessage());
 
             timeWrong = time;
-            showTwoNextAction("Try again", "Go back", () -> enterPin(timeWrong), this::insertCard);
+            showTwoNextAction(STRING_TRY_AGAIN, "Go back", () -> enterPin(timeWrong), this::insertCard);
         } catch (PinWrongException e) {
             System.out.println(e.getMessage());
 
             timeWrong = ++time;
-            showTwoNextAction("Try again", "Go back", () -> enterPin(timeWrong), this::insertCard);
+            showTwoNextAction(STRING_TRY_AGAIN, "Go back", () -> enterPin(timeWrong), this::insertCard);
         } catch (LockCardException e) {
             System.out.println(e.getMessage());
 
@@ -120,8 +124,8 @@ public class ConsoleViewImpl implements View {
 
     @Override
     public void showMenu() {
-        System.out.println("-------------------------");
-        showOptions("PIN change", "Balance inquiry", "Cash withdrawal", "Transfer", "Print statement", "Logout");
+        System.out.println(MULTI_DASH);
+        showOptions("PIN change", "Balance inquiry", "Cash withdrawal", "Transfer", "Print statement", STRING_LOGOUT);
         int choice = enterChoiceOfAction(6);
         switch (choice) {
             case 1:
@@ -142,6 +146,8 @@ public class ConsoleViewImpl implements View {
             case 6:
                 logout();
                 break;
+            default:
+                break;
         }
     }
 
@@ -157,24 +163,24 @@ public class ConsoleViewImpl implements View {
         } catch (InvalidInputException | FailActionException e) {
             System.out.println(e.getMessage());
 
-            showTwoNextAction("Try again", "Menu", this::pinChange, this::showMenu);
+            showTwoNextAction(STRING_TRY_AGAIN, "Menu", this::pinChange, this::showMenu);
         }
     }
 
     @Override
     public void displayBalanceInquiry() {
-        System.out.println("-------------------------");
+        System.out.println(MULTI_DASH);
         System.out.println("Account number: " + currentAccount.getNumber());
         System.out.println("User: " + currentAccount.getName());
-        System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
-        System.out.println("Time: " + StringUtil.dateToString(new Date()));
+        System.out.println("Balance: " + StringUtils.amountToString(currentAccount.getAmount()));
+        System.out.println("Time: " + StringUtils.dateToString(new Date()));
 
-        showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+        showTwoNextAction("Menu", STRING_LOGOUT, this::showMenu, this::logout);
     }
 
     @Override
     public void showOptionsCashWithdrawal() {
-        System.out.println("-------------------------");
+        System.out.println(MULTI_DASH);
         showOptions("200 000", "500 000", "1 000 000", "1 500 000", "2 000 000", "Other number");
         int choice = enterChoiceOfAction(6);
         switch (choice) {
@@ -196,6 +202,8 @@ public class ConsoleViewImpl implements View {
             case 6:
                 enterOtherAmountCashWithdrawal();
                 break;
+            default:
+                break;
         }
     }
 
@@ -209,26 +217,22 @@ public class ConsoleViewImpl implements View {
     @Override
     public void cashWithdrawal(String amount) {
         try {
-            int[][] result = ACCOUNT_VALIDATOR.cashWithdrawal(currentAccount.getNumber(), amount);
+            List<Map.Entry<Integer, Integer>> result = ACCOUNT_VALIDATOR.cashWithdrawal(currentAccount.getNumber(), amount);
             getCurrentAccount();
 
             System.out.println("Cash withdrawal fee: " + Constants.CASH_WITHDRAWAL_FEE);
             System.out.println("Cash out: ");
-            for (int i = 0; i < 4; i++) {
-                if (result[2][i] != 0) {
-                    System.out.println(result[2][i] + " - " + StringUtil.amountToString(result[0][i]));
-                }
-            }
+            result.forEach(a -> System.out.println(StringUtils.amountToString(a.getKey()) + "--  " + a.getValue()));
 
-            showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+            showTwoNextAction("Menu", STRING_LOGOUT, this::showMenu, this::logout);
         } catch (InvalidInputException| NotEnoughBalanceException | FailActionException  e) {
             System.out.println(e.getMessage());
 
-            showTwoNextAction("Try again", "Menu", this::enterOtherAmountCashWithdrawal, this::showMenu);
+            showTwoNextAction(STRING_TRY_AGAIN, "Menu", this::enterOtherAmountCashWithdrawal, this::showMenu);
         } catch (NotEnoughCashInAtmException e) {
             System.out.println(e.getMessage());
 
-            showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+            showTwoNextAction("Menu", STRING_LOGOUT, this::showMenu, this::logout);
         }
     }
 
@@ -242,12 +246,12 @@ public class ConsoleViewImpl implements View {
         } catch (InvalidInputException | NullException e) {
             System.out.println(e.getMessage());
 
-            showTwoNextAction("Try again", "Menu", this::enterAccountTransfer, this::showMenu);
+            showTwoNextAction(STRING_TRY_AGAIN, "Menu", this::enterAccountTransfer, this::showMenu);
         }
     }
 
     public void enterAmountTransfer(AccountModel receiveAccount) {
-        System.out.println("-------------------------");
+        System.out.println(MULTI_DASH);
         System.out.println("Account receive : ");
         System.out.println("Name: " + receiveAccount.getName());
         System.out.println("Account number: " + receiveAccount.getNumber());
@@ -269,22 +273,22 @@ public class ConsoleViewImpl implements View {
             System.out.println("User name: " + currentAccount.getName());
             System.out.println("Account number received: " + receiveAccount.getNumber());
             System.out.println("User name: " + receiveAccount.getName());
-            System.out.println("Amount transfer: " + "-" + StringUtil.amountToString(transactionModel.getAmount()));
-            System.out.println("Transfer fee: " + "-" + StringUtil.amountToString(transactionModel.getFee()));
-            System.out.println("Transfer time: " + StringUtil.dateToString(transactionModel.getDate()));
-            System.out.println("Balance: " + StringUtil.amountToString(currentAccount.getAmount()));
+            System.out.println("Amount transfer: " + "-" + StringUtils.amountToString(transactionModel.getAmount()));
+            System.out.println("Transfer fee: " + "-" + StringUtils.amountToString(transactionModel.getFee()));
+            System.out.println("Transfer time: " + StringUtils.dateToString(transactionModel.getDate()));
+            System.out.println("Balance: " + StringUtils.amountToString(currentAccount.getAmount()));
 
-            showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+            showTwoNextAction("Menu", STRING_LOGOUT, this::showMenu, this::logout);
         } catch (InvalidInputException | NotEnoughBalanceException | FailActionException e) {
             System.out.println(e.getMessage());
 
-            showTwoNextAction("Try again", "Menu", () -> enterAmountTransfer(receiveAccount), this::showMenu);
+            showTwoNextAction(STRING_TRY_AGAIN, "Menu", () -> enterAmountTransfer(receiveAccount), this::showMenu);
         }
     }
 
     @Override
     public void displayStatement() {
-        System.out.println("-------------------------");
+        System.out.println(MULTI_DASH);
         System.out.println("List transactions :");
         for (TransactionModel transactionModel : currentAccount.getListTransactionModel()) {
             if (transactionModel.getTransType() == TransactionModel.TransactionModelType.TRANSFER) {
@@ -298,7 +302,7 @@ public class ConsoleViewImpl implements View {
             }
         }
 
-        showTwoNextAction("Menu", "Logout", this::showMenu, this::logout);
+        showTwoNextAction("Menu", STRING_LOGOUT, this::showMenu, this::logout);
     }
 
     @Override

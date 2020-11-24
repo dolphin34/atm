@@ -1,6 +1,6 @@
 package com.vndirect.atm.controller.service.model;
 
-import com.vndirect.atm.util.StringUtil;
+import com.vndirect.atm.util.StringUtils;
 
 import java.util.Date;
 
@@ -52,14 +52,14 @@ public class TransactionModel {
     }
 
     public String toStringCashWithdrawal() {
-        return transType + "\t" + String.format("%25s", "-" + StringUtil.amountToString(amount + fee)) + "\t" + StringUtil.dateToString(date);
+        return transType + "\t" + String.format("%25s", "-" + StringUtils.amountToString(amount + fee)) + "\t" + StringUtils.dateToString(date);
     }
 
     public String toStringTransferOut() {
-        return transType + "\t    " + String.format("%25s", "-" + StringUtil.amountToString(amount + fee)) + "\t" + StringUtil.dateToString(date) + "\t" + "(to account: " + accountNumberTarget + " )";
+        return transType + "\t    " + String.format("%25s", "-" + StringUtils.amountToString(amount + fee)) + "\t" + StringUtils.dateToString(date) + "\t" + "(to account: " + accountNumberTarget + " )";
     }
 
     public String toStringTransferIn() {
-        return transType + "\t    " + String.format("%25s", "+" + StringUtil.amountToString(amount)) + "\t" + StringUtil.dateToString(date) + "\t" + "(from account: " + accountNumberPerform + " )";
+        return transType + "\t    " + String.format("%25s", "+" + StringUtils.amountToString(amount)) + "\t" + StringUtils.dateToString(date) + "\t" + "(from account: " + accountNumberPerform + " )";
     }
 }

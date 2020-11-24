@@ -5,8 +5,8 @@ import com.vndirect.atm.controller.repo.entity.Account;
 import com.vndirect.atm.controller.repo.entity.Transaction;
 import com.vndirect.atm.controller.repo.repository.AccountRepository;
 import com.vndirect.atm.controller.repo.repository.TransactionRepository;
-import com.vndirect.atm.controller.repo.repository.inmemoryImpl.InMemoryAccountRepositoryImpl;
-import com.vndirect.atm.controller.repo.repository.inmemoryImpl.InMemoryTransactionRepositoryImpl;
+import com.vndirect.atm.controller.repo.repository.inmemoryimpl.InMemoryAccountRepositoryImpl;
+import com.vndirect.atm.controller.repo.repository.inmemoryimpl.InMemoryTransactionRepositoryImpl;
 import com.vndirect.atm.controller.service.AccountService;
 import com.vndirect.atm.controller.service.model.AccountModel;
 import com.vndirect.atm.controller.service.model.TransactionModel;
@@ -15,9 +15,7 @@ import com.vndirect.atm.exception.NotEnoughBalanceException;
 import com.vndirect.atm.exception.NotEnoughCashInAtmException;
 import com.vndirect.atm.util.Constants;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class AccountServiceImpl implements AccountService {
 
@@ -49,7 +47,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public int[][] cashWithdrawal(String accountNumber, long amountWithdrawal) throws FailActionException, NotEnoughCashInAtmException, NotEnoughBalanceException {
+    public List<Map.Entry<Integer, Integer>> cashWithdrawal(String accountNumber, long amountWithdrawal) throws FailActionException, NotEnoughCashInAtmException, NotEnoughBalanceException {
         Account account = ACCOUNT_REPOSITORY.findByAccountNumber(accountNumber);
 
         boolean isValidAmount = amountWithdrawal <= account.getAmount() - Constants.MINIMUM_BALANCE;
@@ -57,12 +55,9 @@ public class AccountServiceImpl implements AccountService {
             throw new NotEnoughBalanceException();
         }
 
-        int[][] cashOut = cashOut(amountWithdrawal);
-        if (cashOut == null) {
-            throw new NotEnoughCashInAtmException();
-        }
+        List<Map.Entry<Integer, Integer>> cashOut = cashOut2(amountWithdrawal);
 
-        Transaction newTransaction = new Transaction(Data.listTransaction.size() + 1, Transaction.TransactionType.CASH_WITHDRAWAL,
+        Transaction newTransaction = new Transaction(Constants.DATA.getListTransaction().size() + 1, Transaction.TransactionType.CASH_WITHDRAWAL,
                 amountWithdrawal, Constants.CASH_WITHDRAWAL_FEE, new Date(), accountNumber, null);
         account = new Account(account.getNumber(), account.getName(), account.getAmount() - (amountWithdrawal + Constants.CASH_WITHDRAWAL_FEE), account.addTransactionsId(newTransaction.getId()));
 
@@ -71,26 +66,39 @@ public class AccountServiceImpl implements AccountService {
             throw new FailActionException("Cash Withdrawal fail!");
         }
 
-        Data.CashInAtm.updateQuantity(cashOut);
         return cashOut;
     }
 
-    public int[][] cashOut(long amount) {
-        int[][] a = Data.CashInAtm.getCashInATM();
-        for (int i = 0; i < 4; i++) {
-            if (amount == 0) break;
-            if (a[1][i] == 0) continue;
-            a[2][i] = (int) amount / a[0][i];
-            if (a[2][i] > a[1][i]) {
-                a[2][i] = a[1][i];
+    private List<Map.Entry<Integer, Integer>> cashOut2(long amount) throws NotEnoughCashInAtmException {
+        SortedSet<Map.Entry<Data.ValueOfCash, Integer>> cashInAtm = new TreeSet<>((a, b) -> b.getKey().getValue() - a.getKey().getValue());
+        cashInAtm.addAll(Constants.DATA.getCashInAtm().entrySet());
+
+        long sumOfCashInAtm = cashInAtm.stream().mapToLong(a -> a.getKey().getValue() * a.getValue()).sum();
+        if (amount > sumOfCashInAtm) {
+            throw new NotEnoughCashInAtmException();
+        }
+
+        List<Map.Entry<Integer, Integer>> result = new ArrayList<>();
+        for (Map.Entry<Data.ValueOfCash, Integer> e : cashInAtm) {
+            int cashValue = e.getKey().getValue();
+            int quantity = e.getValue();
+
+            int piecesOfMoney;
+            if (amount > 0 && quantity > 0) {
+                piecesOfMoney = (int) amount / cashValue;
+                if (piecesOfMoney > quantity) {
+                    piecesOfMoney = quantity;
+                }
+                amount = amount - (piecesOfMoney * cashValue);
+
+                result.add(new AbstractMap.SimpleImmutableEntry<>(cashValue, piecesOfMoney));
             }
-            a[1][i] = a[1][i] - a[2][i];
-            amount = amount - (a[0][i] * a[2][i]);
         }
         if (amount != 0) {
-            return null;
+            throw new NotEnoughCashInAtmException();
         }
-        return a;
+        Constants.DATA.updateCashInAtm(result);
+        return result;
     }
 
     @Override
@@ -103,7 +111,7 @@ public class AccountServiceImpl implements AccountService {
             throw new NotEnoughBalanceException();
         }
 
-        Transaction newTransaction = new Transaction(Data.listTransaction.size() + 1, Transaction.TransactionType.TRANSFER,
+        Transaction newTransaction = new Transaction(Constants.DATA.getListTransaction().size() + 1, Transaction.TransactionType.TRANSFER,
                 amountTransfer, Constants.TRANSFER_FEE, new Date(), currentAccount.getNumber(), receiveAccount.getNumber());
         TransactionModel transactionModel = new TransactionModel(TransactionModel.TransactionModelType.TRANSFER, newTransaction.getAmount(),
                 newTransaction.getFee(), newTransaction.getDate(), newTransaction.getAccountNumberPerform(), newTransaction.getAccountNumberTarget());

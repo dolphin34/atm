@@ -1,4 +1,4 @@
-import com.vndirect.atm.userinterface.consoleviewImpl.ConsoleViewImpl;
+import com.vndirect.atm.userinterface.consoleviewimpl.ConsoleViewImpl;
 import com.vndirect.atm.userinterface.View;
 
 public class ATM {
