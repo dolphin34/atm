@@ -1,31 +1,13 @@
 package com.vndirect.atm.util;
 
-import com.vndirect.atm.exception.InvalidInputException;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class StringUtils {
 
-    private StringUtils() {
-        throw new IllegalStateException("Utility class");
-    }
-
-    public static String formatNumericString(String str) {
-        str = str.trim();
-        str = str.replaceAll("\\s+", "");
-        return str;
-    }
-
-    public static void isNumericString(String str) throws InvalidInputException {
-        try {
-            for (int i = 0; i < str.length(); i++) {
-                Integer.parseInt(String.valueOf(str.charAt(i)));
-            }
-        } catch (NumberFormatException e) {
-            throw new InvalidInputException();
-        }
+    public static boolean isNumericString(String str) {
+        return str.chars().allMatch(Character::isDigit);
     }
 
     public static String amountToString(long amount) {

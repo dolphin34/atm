@@ -1,6 +1,6 @@
 package com.vndirect.atm.util;
 
-import com.vndirect.atm.controller.repo.data.Data;
+import com.vndirect.atm.repo.data.Data;
 
 public class Constants {
 

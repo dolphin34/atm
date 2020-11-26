@@ -1,8 +1,11 @@
 package com.vndirect.atm.exception;
 
 public class PinWrongException extends Exception {
+    
+    public PinWrongException() {
+    }
 
-    public PinWrongException(int wrongTimes) {
-        super("Pin is wrong (" + wrongTimes + " time)! (card will be lock over 3 time wrong)");
+    public PinWrongException(String message) {
+        super(message);
     }
 }
