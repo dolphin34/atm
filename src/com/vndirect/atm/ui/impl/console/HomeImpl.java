@@ -25,7 +25,7 @@ public class HomeImpl extends AtmView implements Home {
                 CashWithdrawalImpl.getView().showOptionsOfCash();
                 break;
             case 4:
-//                transfer.enterAccountTransfer();
+                TransferImpl.getView().enterReceivedAccountNumber();
                 break;
             case 5:
                 StatementHistoryImpl.getView().displayStatement();

@@ -12,4 +12,6 @@ public interface Validator {
     boolean isValidCardNumber(String cardNumber) throws InvalidInputException, NullException;
     boolean isValidPin(CardModel cardModel, String pin) throws InvalidInputException, PinWrongException;
     boolean isValidAmountCashWithdrawal(String amount) throws InvalidInputException, NotEnoughBalanceException;
+    boolean isValidReceivedAccountNumber(String accountNumber) throws InvalidInputException, NullException;
+    boolean isValidAmountTransfer(String amountTransfer) throws InvalidInputException, NotEnoughBalanceException;
 }

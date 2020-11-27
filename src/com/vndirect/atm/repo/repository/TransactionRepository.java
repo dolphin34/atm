@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface TransactionRepository {
 
+    int getSizeOfListTransaction();
     boolean insertTransaction(Transaction transaction);
     List<Transaction> getListTransactionByListId(List<Integer> listTransId);
 }

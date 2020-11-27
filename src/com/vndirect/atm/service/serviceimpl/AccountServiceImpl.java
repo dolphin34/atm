@@ -1,26 +1,24 @@
 package com.vndirect.atm.service.serviceimpl;
 
-import com.vndirect.atm.repo.data.Data;
 import com.vndirect.atm.repo.entity.Account;
 import com.vndirect.atm.repo.entity.Transaction;
 import com.vndirect.atm.repo.repository.AccountRepository;
 import com.vndirect.atm.repo.repository.TransactionRepository;
-import com.vndirect.atm.repo.repository.inmemoryimpl.InMemoryAccountRepositoryImpl;
-import com.vndirect.atm.repo.repository.inmemoryimpl.InMemoryTransactionRepositoryImpl;
+import com.vndirect.atm.repo.repository.impl.inmemory.AccountRepositoryImpl;
+import com.vndirect.atm.repo.repository.impl.inmemory.TransactionRepositoryImpl;
 import com.vndirect.atm.service.AccountService;
 import com.vndirect.atm.service.model.AccountModel;
 import com.vndirect.atm.service.model.TransactionModel;
-import com.vndirect.atm.exception.FailActionException;
-import com.vndirect.atm.exception.NotEnoughBalanceException;
-import com.vndirect.atm.exception.NotEnoughCashInAtmException;
 import com.vndirect.atm.util.Constants;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class AccountServiceImpl implements AccountService {
 
-    private static final AccountRepository ACCOUNT_REPOSITORY = new InMemoryAccountRepositoryImpl();
-    private static final TransactionRepository TRANSACTION_REPOSITORY = new InMemoryTransactionRepositoryImpl();
+    private static final AccountRepository ACCOUNT_REPOSITORY = AccountRepositoryImpl.getInstance();
+    private static final TransactionRepository TRANSACTION_REPOSITORY = TransactionRepositoryImpl.getInstance();
 
     @Override
     public AccountModel findAccountModelByNumber(String accountNumber) {
@@ -48,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountModel processCashWithdrawal(AccountModel accountModel, long amountWithdrawal){
-        Transaction newTransaction = new Transaction(Constants.DATA.getListTransaction().size() + 1, Transaction.TransactionType.CASH_WITHDRAWAL,
+        Transaction newTransaction = new Transaction(TRANSACTION_REPOSITORY.getSizeOfListTransaction() + 1, Transaction.TransactionType.CASH_WITHDRAWAL,
                 amountWithdrawal, Constants.CASH_WITHDRAWAL_FEE, new Date(), accountModel.getNumber(), null);
 
         Account account = ACCOUNT_REPOSITORY.findAccountByNumber(accountModel.getNumber());
@@ -62,31 +60,27 @@ public class AccountServiceImpl implements AccountService {
         return accountModel;
     }
 
-
-
     @Override
-    public TransactionModel transfer(String currentAccountNumber, String receiveAccountNumber, long amountTransfer) throws FailActionException, NotEnoughBalanceException {
-        Account currentAccount = ACCOUNT_REPOSITORY.findAccountByNumber(currentAccountNumber);
-        Account receiveAccount = ACCOUNT_REPOSITORY.findAccountByNumber(receiveAccountNumber);
+    public TransactionModel processTransfer(AccountModel transferAccount, AccountModel receivedAccount, long amountTransfer) {
+        Transaction newTransaction = new Transaction(TRANSACTION_REPOSITORY.getSizeOfListTransaction() + 1, Transaction.TransactionType.TRANSFER,
+                                        amountTransfer, Constants.TRANSFER_FEE, new Date(), transferAccount.getNumber(), receivedAccount.getNumber());
 
-        boolean isValidAmount = amountTransfer + Constants.TRANSFER_FEE <= currentAccount.getAmount() - Constants.MINIMUM_BALANCE;
-        if (!isValidAmount) {
-            throw new NotEnoughBalanceException();
-        }
+        Account sendAccount = ACCOUNT_REPOSITORY.findAccountByNumber(transferAccount.getNumber());
+        sendAccount.setAmount(sendAccount.getAmount() - ( amountTransfer + Constants.TRANSFER_FEE));
+        sendAccount.addTransactionsId(newTransaction.getId());
 
-        Transaction newTransaction = new Transaction(Constants.DATA.getListTransaction().size() + 1, Transaction.TransactionType.TRANSFER,
-                amountTransfer, Constants.TRANSFER_FEE, new Date(), currentAccount.getNumber(), receiveAccount.getNumber());
-        TransactionModel transactionModel = new TransactionModel(TransactionModel.TransactionModelType.TRANSFER, newTransaction.getAmount(),
-                newTransaction.getFee(), newTransaction.getDate(), newTransaction.getAccountNumberPerform(), newTransaction.getAccountNumberTarget());
-        currentAccount = new Account(currentAccount.getNumber(), currentAccount.getName(), currentAccount.getAmount() - ( amountTransfer + Constants.TRANSFER_FEE), currentAccount.addTransactionsId(newTransaction.getId()));
-        receiveAccount = new Account(receiveAccount.getNumber(), receiveAccount.getName(), receiveAccount.getAmount() + amountTransfer, receiveAccount.addTransactionsId(newTransaction.getId()));
+        Account targetAccount = ACCOUNT_REPOSITORY.findAccountByNumber(receivedAccount.getNumber());
+        targetAccount.setAmount(targetAccount.getAmount() + amountTransfer);
+        targetAccount.addTransactionsId(newTransaction.getId());
 
-        boolean transferSuccess = ACCOUNT_REPOSITORY.updateInfoAccount(currentAccount)
-                && ACCOUNT_REPOSITORY.updateInfoAccount(receiveAccount)
-                && TRANSACTION_REPOSITORY.insertTransaction(newTransaction);
+        boolean transferSuccess = ACCOUNT_REPOSITORY.updateInfoAccount(sendAccount)
+                                  && ACCOUNT_REPOSITORY.updateInfoAccount(targetAccount)
+                                  && TRANSACTION_REPOSITORY.insertTransaction(newTransaction);
         if (!transferSuccess) {
-           throw new FailActionException("Transfer fail!");
+            return null;
         }
-        return transactionModel;
+
+        return new TransactionModel(TransactionModel.TransactionModelType.TRANSFER, newTransaction.getAmount(),
+                newTransaction.getFee(), newTransaction.getDate(), newTransaction.getAccountNumberPerform(), newTransaction.getAccountNumberTarget());
     }
 }

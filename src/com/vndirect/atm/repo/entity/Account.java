@@ -40,9 +40,8 @@ public class Account {
         this.listTransactionId = listTransactionId;
     }
 
-    public List<Integer> addTransactionsId(Integer newTransactionId) {
+    public void addTransactionsId(Integer newTransactionId) {
         listTransactionId.add(newTransactionId);
-        return listTransactionId;
     }
 
 }

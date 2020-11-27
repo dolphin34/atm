@@ -2,13 +2,13 @@ package com.vndirect.atm.service.serviceimpl;
 
 import com.vndirect.atm.repo.entity.Card;
 import com.vndirect.atm.repo.repository.CardRepository;
-import com.vndirect.atm.repo.repository.inmemoryimpl.InMemoryCardRepositoryImpl;
+import com.vndirect.atm.repo.repository.impl.inmemory.CardRepositoryImpl;
 import com.vndirect.atm.service.CardService;
 import com.vndirect.atm.service.model.CardModel;
 
 public class CardServiceImpl implements CardService {
 
-    private static final CardRepository CARD_REPOSITORY = new InMemoryCardRepositoryImpl();
+    private static final CardRepository CARD_REPOSITORY = CardRepositoryImpl.getInstance();
 
     @Override
     public CardModel findCardByNumber(String cardNumber) {

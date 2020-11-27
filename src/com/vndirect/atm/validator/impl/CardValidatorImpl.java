@@ -24,7 +24,7 @@ public class CardValidatorImpl implements CardValidator {
     public void existCardNumber(CardService cardService, String cardNumber) throws NullException {
         CardModel cardModel = cardService.findCardByNumber(cardNumber);
         if (cardModel == null) {
-            throw new NullException("Card do not exist!");
+            throw new NullException("Card does not exist!");
         }
         SESSION.setCurrentCard(cardModel);
     }

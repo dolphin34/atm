@@ -51,6 +51,10 @@ public class TransactionModel {
         return accountNumberTarget;
     }
 
+    public static int compare(TransactionModel a, TransactionModel b) {
+        return b.getDate().compareTo(a.getDate());
+    }
+
     public String toStringCashWithdrawal() {
         return transType + "\t" + String.format("%25s", "-" + StringUtils.amountToString(amount + fee)) + "\t" + StringUtils.dateToString(date);
     }

@@ -1,10 +1,12 @@
 package com.vndirect.atm.ui;
 
 import com.vndirect.atm.service.model.AccountModel;
+import com.vndirect.atm.service.model.TransactionModel;
 
 public interface Transfer {
 
-    void enterAccountTransfer();
-    void enterOtherAmountCashWithdrawal();
-    void transfer(AccountModel receiveAccount, String amountTransfer);
+    void enterReceivedAccountNumber();
+    void enterAmountTransfer(AccountModel receivedAccount);
+    void processTransfer(AccountModel receiveAccount, long amountTransfer);
+    void displayResult(AccountModel receiveAccount, TransactionModel transactionModel);
 }

@@ -6,7 +6,7 @@ public class AccountModel {
 
     private final String number;
     private final String name;
-    private final long amount;
+    private long amount;
     private final List<TransactionModel> listTransactionModel;
 
     public AccountModel(String number, String name, long amount, List<TransactionModel> listTransactionModel) {
@@ -28,7 +28,15 @@ public class AccountModel {
         return amount;
     }
 
+    public void setAmount(long amount) {
+        this.amount = amount;
+    }
+
     public List<TransactionModel> getListTransactionModel() {
         return listTransactionModel;
+    }
+
+    public void addTransaction(TransactionModel transactionModel) {
+        listTransactionModel.add(transactionModel);
     }
 }

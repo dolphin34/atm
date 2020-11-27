@@ -3,6 +3,7 @@ package com.vndirect.atm.repo.entity;
 import java.util.Date;
 
 public class Transaction {
+
     public enum TransactionType {
         TRANSFER(1),
         CASH_WITHDRAWAL(2);
@@ -64,7 +65,4 @@ public class Transaction {
         return accountNumberTarget;
     }
 
-    public static int compareByDate(Transaction transaction, Transaction otherTransaction) {
-        return otherTransaction.date.compareTo(transaction.date);
-    }
 }
