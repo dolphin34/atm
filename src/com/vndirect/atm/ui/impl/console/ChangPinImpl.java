@@ -1,5 +1,6 @@
 package com.vndirect.atm.ui.impl.console;
 
+import com.vndirect.atm.exception.FailActionException;
 import com.vndirect.atm.exception.InvalidInputException;
 import com.vndirect.atm.ui.ChangePin;
 
@@ -15,12 +16,18 @@ public class ChangPinImpl extends AtmView implements ChangePin {
     public void enterOldPin() {
         String notify = "Enter your old pin (6 digits): ";
         String oldPin = input(notify);
-        if (SESSION.getCurrentCard().getPin().equals(oldPin)) {
-            enterNewPin();
-        } else {
-            System.out.println("Old pin is wrong!");
-            showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, this::enterOldPin, HomeImpl.getView()::showMenu);
+        try {
+            VALIDATOR.getCardValidator().validatePin(oldPin);
+            if (SESSION.getCurrentCard().getPin().equals(oldPin)) {
+                enterNewPin();
+            } else {
+                System.out.println("Old pin is wrong!");
+            }
+        } catch (InvalidInputException e) {
+            System.out.println(e.getMessage());
         }
+
+        showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, this::enterOldPin, HomeImpl.getView()::showMenu);
     }
 
     @Override
@@ -46,16 +53,17 @@ public class ChangPinImpl extends AtmView implements ChangePin {
         String notify = "Enter your new pin again (6 digits): ";
         String confirmPin = input(notify);
         if (confirmPin.equals(newPin)) {
-            if (CARD_SERVICE.changePin(SESSION.getCurrentCard(), newPin)) {
+            try {
+                CARD_SERVICE.changePin(SESSION.getCurrentCard(), newPin);
                 System.out.println("Change pin success!");
-            } else {
+                showTwoNextAction(STRING_MENU, STRING_LOGOUT, HomeImpl.getView()::showMenu, LoginImpl.getView()::logout);
+            } catch (FailActionException e) {
                 System.out.println("Change pin fail!");
+                showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, this::enterNewPin, HomeImpl.getView()::showMenu);
             }
-            showTwoNextAction(STRING_MENU, STRING_LOGOUT, HomeImpl.getView()::showMenu, LoginImpl.getView()::logout);
-            HomeImpl.getView().showMenu();
         } else {
             System.out.println("New pin not the same!");
-            showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, this::enterNewPin, HomeImpl.getView()::showMenu);
+            showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, () -> this.confirmNewPin(newPin), HomeImpl.getView()::showMenu);
         }
     }
 }

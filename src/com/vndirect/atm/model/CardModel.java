@@ -1,16 +1,19 @@
-package com.vndirect.atm.repo.entity;
+package com.vndirect.atm.model;
 
-public class Card {
+public class CardModel {
 
     private final String number;
+
     private String pin;
+
     private final String name;
+
     private final String accountNumber;
+
     private boolean active;
 
-    public Card(String number, String pin, String name, String accountNumber, boolean active) {
+    public CardModel(String number, String name, String accountNumber, boolean active) {
         this.number = number;
-        this.pin = pin;
         this.name = name;
         this.accountNumber = accountNumber;
         this.active = active;

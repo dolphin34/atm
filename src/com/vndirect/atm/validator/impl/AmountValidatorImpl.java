@@ -20,24 +20,33 @@ public class AmountValidatorImpl implements AmountValidator {
     }
 
     @Override
-    public void confirmAmountCashWithdrawal(String amount) throws NotEnoughBalanceException, InvalidInputException {
+    public void confirmAmountCashWithdrawal(String amount) throws InvalidInputException, NotEnoughBalanceException {
         amount = amount.trim();
-        boolean isValidAmountCashWithdrawal = Long.parseLong(amount) % 50_000 == 0;
-        if (!isValidAmountCashWithdrawal) {
-            throw new InvalidInputException("Number is multiples of 50,000");
+        try {
+            boolean isValidAmountCashWithdrawal = Long.parseLong(amount) % 50_000 == 0;
+            if (!isValidAmountCashWithdrawal) {
+                throw new InvalidInputException("Number is multiples of 50,000");
+            }
+            boolean isEnoughAmount = Long.parseLong(amount) <= SESSION.getCurrentAccount().getAmount() - (Constants.MINIMUM_BALANCE_FOR_CASH_WITHDRAWAL);
+            if (!isEnoughAmount) {
+                throw new NotEnoughBalanceException();
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidInputException();
         }
-        boolean isEnoughAmount = Long.parseLong(amount) <= SESSION.getCurrentAccount().getAmount() - (Constants.MINIMUM_BALANCE + Constants.CASH_WITHDRAWAL_FEE);
-        if (!isEnoughAmount) {
-            throw new NotEnoughBalanceException();
-        }
+
     }
 
     @Override
-    public void confirmAmountTransfer(String amount) throws NotEnoughBalanceException {
+    public void confirmAmountTransfer(String amount) throws InvalidInputException, NotEnoughBalanceException {
         amount = amount.trim();
-        boolean isEnoughAmount = Long.parseLong(amount) <= SESSION.getCurrentAccount().getAmount() - (Constants.MINIMUM_BALANCE + Constants.TRANSFER_FEE);
-        if (!isEnoughAmount) {
-            throw new NotEnoughBalanceException();
+        try {
+            boolean isEnoughAmount = Long.parseLong(amount) <= SESSION.getCurrentAccount().getAmount() - (Constants.MINIMUM_BALANCE_FOR_TRANSFER);
+            if (!isEnoughAmount) {
+                throw new NotEnoughBalanceException();
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidInputException();
         }
     }
 }

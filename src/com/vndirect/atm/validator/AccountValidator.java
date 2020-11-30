@@ -7,5 +7,6 @@ import com.vndirect.atm.service.AccountService;
 public interface AccountValidator {
 
     void validateAccountNumber(String accountNumber) throws InvalidInputException;
-    void existAccountNumber(AccountService accountService, String accountNumber) throws NullException, InvalidInputException;
+
+    void existAccountNumber(AccountService accountService, String accountNumber) throws NullException;
 }

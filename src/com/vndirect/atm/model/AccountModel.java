@@ -1,19 +1,22 @@
-package com.vndirect.atm.service.model;
+package com.vndirect.atm.model;
 
 import java.util.List;
 
 public class AccountModel {
 
     private final String number;
-    private final String name;
-    private long amount;
-    private final List<TransactionModel> listTransactionModel;
 
-    public AccountModel(String number, String name, long amount, List<TransactionModel> listTransactionModel) {
+    private final String name;
+
+    private long amount;
+
+    private final List<TransactionModel> transactions;
+
+    public AccountModel(String number, String name, long amount, List<TransactionModel> transactions) {
         this.number = number;
         this.name = name;
         this.amount = amount;
-        this.listTransactionModel = listTransactionModel;
+        this.transactions = transactions;
     }
 
     public String getNumber() {
@@ -32,11 +35,11 @@ public class AccountModel {
         this.amount = amount;
     }
 
-    public List<TransactionModel> getListTransactionModel() {
-        return listTransactionModel;
+    public List<TransactionModel> getTransactions() {
+        return transactions;
     }
 
-    public void addTransaction(TransactionModel transactionModel) {
-        listTransactionModel.add(transactionModel);
+    public void addTransaction(TransactionModel transaction) {
+        transactions.add(transaction);
     }
 }

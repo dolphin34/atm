@@ -1,11 +1,12 @@
 package com.vndirect.atm.session;
 
-import com.vndirect.atm.service.model.AccountModel;
-import com.vndirect.atm.service.model.CardModel;
+import com.vndirect.atm.model.AccountModel;
+import com.vndirect.atm.model.CardModel;
 
 public class Session {
 
     private  CardModel currentCard;
+
     private  AccountModel currentAccount;
 
     public CardModel getCurrentCard() {

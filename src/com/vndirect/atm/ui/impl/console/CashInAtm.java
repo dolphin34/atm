@@ -34,14 +34,14 @@ public class CashInAtm {
     }
 
     public static void checkCashInAtm(long amount) throws NotEnoughCashInAtmException {
-        if (cashOut(amount) == null) {
+        if (cashOut(amount).isEmpty()) {
             throw new NotEnoughCashInAtmException();
         }
     }
 
     public static List<Map.Entry<Integer, Integer>> getCashOut(long amount) {
         List<Map.Entry<Integer, Integer>> result = cashOut(amount);
-        if (result != null) {
+        if (!result.isEmpty()) {
             updateCashInAtm(result);
         }
         return result;
@@ -53,7 +53,7 @@ public class CashInAtm {
 
         long sumOfCashInAtm = valueCashInAtm.stream().mapToLong(a -> a.getKey().getValue() * a.getValue()).sum();
         if (amount > sumOfCashInAtm) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<Map.Entry<Integer, Integer>> result = new ArrayList<>();
@@ -75,7 +75,7 @@ public class CashInAtm {
             }
         }
         if (amount != 0) {
-            return null;
+            return Collections.emptyList();
         }
         return result;
     }

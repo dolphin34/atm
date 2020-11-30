@@ -16,13 +16,19 @@ public class AtmView {
     private static final Scanner scanner = new Scanner(System.in);
 
     public static final Session SESSION = new Session();
+
     protected static final Validator VALIDATOR = new ValidatorImpl();
+
     protected static final CardService CARD_SERVICE = new CardServiceImpl();
+
     protected static final AccountService ACCOUNT_SERVICE= new AccountServiceImpl();
 
     protected static final String MULTI_DASH = "--------------------";
+
     protected static final String STRING_TRY_AGAIN = "Try again";
+
     protected static final String STRING_MENU = "Menu";
+
     protected static final String STRING_LOGOUT = "Logout";
 
     @FunctionalInterface

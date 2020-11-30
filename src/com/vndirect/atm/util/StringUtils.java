@@ -1,8 +1,7 @@
 package com.vndirect.atm.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class StringUtils {
 
@@ -14,8 +13,8 @@ public class StringUtils {
         return String.format("%,d", amount) + " VND  ";
     }
 
-    public static String dateToString(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("E hh:mm:ss a, dd-MMM-yyyy");
-        return dateFormat.format(date);
+    public static String dateToString(LocalDateTime date) {
+        DateTimeFormatter pattern = DateTimeFormatter.ofPattern("E hh:mm:ss a, dd-MMM-yyyy");
+        return date.format(pattern);
     }
 }

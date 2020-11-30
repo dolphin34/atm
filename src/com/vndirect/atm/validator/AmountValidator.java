@@ -6,6 +6,8 @@ import com.vndirect.atm.exception.NotEnoughBalanceException;
 public interface AmountValidator {
 
     void validateAmount(String amount) throws InvalidInputException;
+
     void confirmAmountCashWithdrawal(String amount) throws NotEnoughBalanceException, InvalidInputException;
-    void confirmAmountTransfer(String amount) throws NotEnoughBalanceException;
+
+    void confirmAmountTransfer(String amount) throws NotEnoughBalanceException, InvalidInputException;
 }

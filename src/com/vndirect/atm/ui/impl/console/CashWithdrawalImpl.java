@@ -1,18 +1,24 @@
 package com.vndirect.atm.ui.impl.console;
 
+import com.vndirect.atm.exception.FailActionException;
 import com.vndirect.atm.exception.InvalidInputException;
 import com.vndirect.atm.exception.NotEnoughBalanceException;
 import com.vndirect.atm.exception.NotEnoughCashInAtmException;
+import com.vndirect.atm.model.AccountModel;
+import com.vndirect.atm.model.TransactionModel;
+import com.vndirect.atm.ui.Amount;
 import com.vndirect.atm.ui.CashWithdrawal;
-import com.vndirect.atm.util.Constants;
-import com.vndirect.atm.util.StringUtils;
+import com.vndirect.atm.ui.impl.console.amount.VndAmountImpl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CashWithdrawalImpl extends AtmView implements CashWithdrawal {
 
     private static final CashWithdrawal INSTANCE = new CashWithdrawalImpl();
+
+    private static final Amount amountObj = new VndAmountImpl();
 
     public static CashWithdrawal getView() {
         return INSTANCE;
@@ -52,9 +58,8 @@ public class CashWithdrawalImpl extends AtmView implements CashWithdrawal {
         String notify = "Enter number amount (multiples of 50,000): ";
         String amount = input(notify);
         try {
-            if (VALIDATOR.isValidAmountCashWithdrawal(amount)) {
-                processCashWithdrawal(Long.parseLong(amount));
-            }
+            VALIDATOR.isValidAmountCashWithdrawal(amount);
+            processCashWithdrawal(Long.parseLong(amount));
         } catch (InvalidInputException | NotEnoughBalanceException e) {
             System.out.println(e.getMessage());
             showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, this::enterOtherAmount, HomeImpl.getView()::showMenu);
@@ -65,19 +70,23 @@ public class CashWithdrawalImpl extends AtmView implements CashWithdrawal {
     public void processCashWithdrawal(long amount) {
         try {
             CashInAtm.checkCashInAtm(amount);
-            SESSION.setCurrentAccount(ACCOUNT_SERVICE.processCashWithdrawal(SESSION.getCurrentAccount(), amount));
-            displayResult(CashInAtm.getCashOut(amount));
-        } catch (NotEnoughCashInAtmException e) {
+            TransactionModel transaction = ACCOUNT_SERVICE.processCashWithdrawal(SESSION.getCurrentAccount(), amount);
+
+            Optional<AccountModel> account = ACCOUNT_SERVICE.findByNumber(SESSION.getCurrentAccount().getNumber());
+            account.ifPresent(SESSION::setCurrentAccount);
+
+            displayResult(transaction, CashInAtm.getCashOut(amount));
+        } catch (NotEnoughCashInAtmException | FailActionException e) {
             System.out.println(e.getMessage());
             showTwoNextAction(STRING_TRY_AGAIN, STRING_MENU, this::enterOtherAmount, HomeImpl.getView()::showMenu);
         }
     }
 
     @Override
-    public void displayResult(List<Map.Entry<Integer, Integer>> result) {
-        System.out.println("Cash withdrawal fee: " + Constants.CASH_WITHDRAWAL_FEE);
+    public void displayResult(TransactionModel transaction, List<Map.Entry<Integer, Integer>> result) {
+        System.out.println("Cash withdrawal fee: " + transaction.getFee());
         System.out.println("Cash out: ");
-        result.forEach(a -> System.out.println(StringUtils.amountToString(a.getKey()) + "--  " + a.getValue()));
+        result.forEach(a -> System.out.println(amountObj.toString(a.getKey()) + "--  " + a.getValue()));
         showTwoNextAction(STRING_MENU, STRING_LOGOUT, HomeImpl.getView()::showMenu, LoginImpl.getView()::logout);
     }
 }

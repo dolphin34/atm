@@ -1,35 +1,41 @@
-package com.vndirect.atm.repo.entity;
+package com.vndirect.atm.entity;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class Transaction {
 
     public enum TransactionType {
-        TRANSFER(1),
-        CASH_WITHDRAWAL(2);
+        TRANSFER("TRANSFER"),
+        CASH_WITHDRAWAL("CASH WITHDRAWAL");
 
-        private final int code;
+        private final String text;
 
-        TransactionType(int code) {
-            this.code = code;
+        TransactionType(String text) {
+            this.text = text;
         }
 
-        public int getCode() {
-            return code;
+        public String getText() {
+            return text;
         }
     }
 
     private final int id;
-    private final TransactionType transType;
+
+    private final TransactionType transactionType;
+
     private final long amount;
+
     private final long fee;
-    private final Date date;
+
+    private final LocalDateTime date;
+
     private final String accountNumberPerform;
+
     private final String accountNumberTarget;
 
-    public Transaction(int id, TransactionType transType, long amount, long fee, Date date, String accountNumberPerform, String accountNumberTarget) {
+    public Transaction(int id, TransactionType transactionType, long amount, long fee, LocalDateTime date, String accountNumberPerform, String accountNumberTarget) {
         this.id = id;
-        this.transType = transType;
+        this.transactionType = transactionType;
         this.amount = amount;
         this.fee = fee;
         this.date = date;
@@ -41,8 +47,8 @@ public class Transaction {
         return id;
     }
 
-    public TransactionType getTransType() {
-        return transType;
+    public TransactionType getTransactionType() {
+        return transactionType;
     }
 
     public long getAmount() {
@@ -53,7 +59,7 @@ public class Transaction {
         return fee;
     }
 
-    public Date getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
