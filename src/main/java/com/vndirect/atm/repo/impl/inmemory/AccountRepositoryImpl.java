@@ -33,15 +33,15 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public Optional<Account> findByNumber(String accountNumber) {
+    public Optional<Account> findOneByNumber(String accountNumber) {
         return ACCOUNTS.stream()
                 .filter(a -> a.getNumber().equals(accountNumber))
                 .findFirst();
     }
 
     @Override
-    public void updateInfo(Account updateAccount) throws FailActionException {
-        Optional<Account> account = findByNumber(updateAccount.getNumber());
+    public void update(Account updateAccount) throws FailActionException {
+        Optional<Account> account = findOneByNumber(updateAccount.getNumber());
         if (account.isPresent()) {
             account.get().setAmount(updateAccount.getAmount());
             account.get().setTransactionIds(updateAccount.getTransactionIds());

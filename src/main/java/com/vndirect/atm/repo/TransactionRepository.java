@@ -9,9 +9,9 @@ public interface TransactionRepository {
 
     int getSizeTransactions();
 
-    Optional<Transaction> findById(int transactionId);
+    Optional<Transaction> findOneById(int transactionId);
 
-    void saveTransaction(Transaction transaction);
+    void save(Transaction transaction);
 
-    List<Transaction> getTransactions(List<Integer> transactionIds);
+    List<Transaction> findByIds(List<Integer> transactionIds);
 }

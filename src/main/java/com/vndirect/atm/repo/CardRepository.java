@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface CardRepository {
 
-    Optional<Card> findByNumber(String cardNumber);
+    Optional<Card> findOneByNumber(String cardNumber);
 
-    void updateInfo(Card updateCard) throws FailActionException;
+    void update(Card updateCard) throws FailActionException;
 }

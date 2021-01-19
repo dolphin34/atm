@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface AccountRepository {
 
-    Optional<Account> findByNumber(String accountNumber);
+    Optional<Account> findOneByNumber(String accountNumber);
 
-    void updateInfo(Account updateAccount) throws FailActionException;
+    void update(Account updateAccount) throws FailActionException;
 }

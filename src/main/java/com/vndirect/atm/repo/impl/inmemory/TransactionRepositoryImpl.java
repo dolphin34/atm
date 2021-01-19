@@ -26,7 +26,7 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public Optional<Transaction> findById(int transactionId) {
+    public Optional<Transaction> findOneById(int transactionId) {
         return TRANSACTIONS.stream()
                         .filter(transaction -> transaction.getId() == transactionId)
                         .findFirst();
@@ -37,15 +37,15 @@ public class TransactionRepositoryImpl implements TransactionRepository {
     }
 
     @Override
-    public void saveTransaction(Transaction transaction) {
+    public void save(Transaction transaction) {
         incrementSizeOfListTransaction();
         TRANSACTIONS.add(transaction);
     }
 
     @Override
-    public List<Transaction> getTransactions(List<Integer> transactionIds) {
+    public List<Transaction> findByIds(List<Integer> transactionIds) {
         return transactionIds.stream()
-                            .map(this::findById)
+                            .map(this::findOneById)
                             .map(Optional::get)
                             .collect(Collectors.toList());
     }

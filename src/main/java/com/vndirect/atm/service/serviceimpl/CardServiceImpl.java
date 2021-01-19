@@ -16,14 +16,14 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public Optional<CardModel> findByNumber(String cardNumber) {
-        Optional<Card> card = CARD_REPOSITORY.findByNumber(cardNumber);
+        Optional<Card> card = CARD_REPOSITORY.findOneByNumber(cardNumber);
         return card.map(value -> new CardModel(value.getNumber(), value.getName(), value.getAccountNumber(), value.isActive()));
 
     }
 
     @Override
     public void checkPin(CardModel cardModel, String pin) throws PinWrongException {
-        Optional<Card> card = CARD_REPOSITORY.findByNumber(cardModel.getNumber());
+        Optional<Card> card = CARD_REPOSITORY.findOneByNumber(cardModel.getNumber());
         if (card.isPresent() && !card.get().getPin().equals(pin)) {
             throw new PinWrongException();
         }
@@ -31,10 +31,10 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public void lockCard(CardModel cardModel) throws FailActionException {
-        Optional<Card> card = CARD_REPOSITORY.findByNumber(cardModel.getNumber());
+        Optional<Card> card = CARD_REPOSITORY.findOneByNumber(cardModel.getNumber());
         if (card.isPresent()) {
             card.get().setActive(false);
-            CARD_REPOSITORY.updateInfo(card.get());
+            CARD_REPOSITORY.update(card.get());
         } else {
             throw new FailActionException();
         }
@@ -42,10 +42,10 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public void changePin(CardModel cardModel, String newPin) throws FailActionException {
-        Optional<Card> card = CARD_REPOSITORY.findByNumber(cardModel.getNumber());
+        Optional<Card> card = CARD_REPOSITORY.findOneByNumber(cardModel.getNumber());
         if (card.isPresent()) {
             card.get().setPin(newPin);
-            CARD_REPOSITORY.updateInfo(card.get());
+            CARD_REPOSITORY.update(card.get());
         } else {
             throw new FailActionException();
         }

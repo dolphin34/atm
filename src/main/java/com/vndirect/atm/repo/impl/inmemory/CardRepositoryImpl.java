@@ -36,15 +36,15 @@ public class CardRepositoryImpl implements CardRepository {
     }
 
     @Override
-    public Optional<Card> findByNumber(String cardNumber) {
+    public Optional<Card> findOneByNumber(String cardNumber) {
         return CARDS.stream()
                 .filter(c -> c.getNumber().equals(cardNumber))
                 .findFirst();
     }
 
     @Override
-    public void updateInfo(Card updateCard) throws FailActionException {
-        Optional<Card> card = findByNumber(updateCard.getNumber());
+    public void update(Card updateCard) throws FailActionException {
+        Optional<Card> card = findOneByNumber(updateCard.getNumber());
         if (card.isPresent()) {
             card.get().setPin(updateCard.getPin());
             card.get().setActive(updateCard.isActive());

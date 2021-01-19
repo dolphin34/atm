@@ -25,9 +25,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<AccountModel> findByNumber(String accountNumber) {
-        Optional<Account> account = ACCOUNT_REPOSITORY.findByNumber(accountNumber);
+        Optional<Account> account = ACCOUNT_REPOSITORY.findOneByNumber(accountNumber);
         if (account.isPresent()) {
-            List<Transaction> transactions = TRANSACTION_REPOSITORY.getTransactions(account.get().getTransactionIds());
+            List<Transaction> transactions = TRANSACTION_REPOSITORY.findByIds(account.get().getTransactionIds());
             List<TransactionModel> transactionModels = new ArrayList<>();
             for (Transaction transaction : transactions) {
                 TransactionModel temp = new TransactionModel(transaction.getTransactionType().getText(), transaction.getAmount(), transaction.getFee(), transaction.getDate(), transaction.getAccountNumberPerform(), transaction.getAccountNumberTarget());
@@ -42,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
     public TransactionModel processCashWithdrawal(AccountModel accountModel, long amountWithdrawal) throws FailActionException {
         Transaction newTransaction = new Transaction(TRANSACTION_REPOSITORY.getSizeTransactions() + 1, Transaction.TransactionType.CASH_WITHDRAWAL, amountWithdrawal, Constants.CASH_WITHDRAWAL_FEE, LocalDateTime.now(), accountModel.getNumber(), null);
 
-        Optional<Account> account = ACCOUNT_REPOSITORY.findByNumber(accountModel.getNumber());
+        Optional<Account> account = ACCOUNT_REPOSITORY.findOneByNumber(accountModel.getNumber());
         if (account.isPresent()) {
             account.get().addTransactionId(newTransaction.getId());
             account.get().setAmount(account.get().getAmount() - (amountWithdrawal + Constants.CASH_WITHDRAWAL_FEE));
@@ -50,8 +50,8 @@ public class AccountServiceImpl implements AccountService {
             throw new FailActionException();
         }
 
-        TRANSACTION_REPOSITORY.saveTransaction(newTransaction);
-        ACCOUNT_REPOSITORY.updateInfo(account.get());
+        TRANSACTION_REPOSITORY.save(newTransaction);
+        ACCOUNT_REPOSITORY.update(account.get());
 
         return new TransactionModel(newTransaction.getTransactionType().getText(), newTransaction.getAmount(), newTransaction.getFee(), newTransaction.getDate(), newTransaction.getAccountNumberPerform(), newTransaction.getAccountNumberTarget());
     }
@@ -60,7 +60,7 @@ public class AccountServiceImpl implements AccountService {
     public TransactionModel processTransfer(AccountModel transferAccount, AccountModel receivedAccount, long amountTransfer) throws FailActionException {
         Transaction newTransaction = new Transaction(TRANSACTION_REPOSITORY.getSizeTransactions() + 1, Transaction.TransactionType.TRANSFER, amountTransfer, Constants.TRANSFER_FEE, LocalDateTime.now(), transferAccount.getNumber(), receivedAccount.getNumber());
 
-        Optional<Account> sendAccount = ACCOUNT_REPOSITORY.findByNumber(transferAccount.getNumber());
+        Optional<Account> sendAccount = ACCOUNT_REPOSITORY.findOneByNumber(transferAccount.getNumber());
         if (sendAccount.isPresent()) {
             sendAccount.get().setAmount(sendAccount.get().getAmount() - (amountTransfer + Constants.TRANSFER_FEE));
             sendAccount.get().addTransactionId(newTransaction.getId());
@@ -68,7 +68,7 @@ public class AccountServiceImpl implements AccountService {
             throw new FailActionException();
         }
 
-        Optional<Account> targetAccount = ACCOUNT_REPOSITORY.findByNumber(receivedAccount.getNumber());
+        Optional<Account> targetAccount = ACCOUNT_REPOSITORY.findOneByNumber(receivedAccount.getNumber());
         if (targetAccount.isPresent()) {
             targetAccount.get().setAmount(targetAccount.get().getAmount() + amountTransfer);
             targetAccount.get().addTransactionId(newTransaction.getId());
@@ -76,9 +76,9 @@ public class AccountServiceImpl implements AccountService {
             throw new FailActionException();
         }
 
-        TRANSACTION_REPOSITORY.saveTransaction(newTransaction);
-        ACCOUNT_REPOSITORY.updateInfo(sendAccount.get());
-        ACCOUNT_REPOSITORY.updateInfo(targetAccount.get());
+        TRANSACTION_REPOSITORY.save(newTransaction);
+        ACCOUNT_REPOSITORY.update(sendAccount.get());
+        ACCOUNT_REPOSITORY.update(targetAccount.get());
 
         return new TransactionModel(newTransaction.getTransactionType().getText(), newTransaction.getAmount(), newTransaction.getFee(), newTransaction.getDate(), newTransaction.getAccountNumberPerform(), newTransaction.getAccountNumberTarget());
     }
